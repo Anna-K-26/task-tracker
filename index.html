@@ -9,84 +9,18 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-th-large"></i>
-                    <span>Menu <small>(Manager)</small></span>
-                </div>
-                <i class="fas fa-chevron-left toggle-sidebar"></i>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="active"><i class="fas fa-home"></i> Kanban Board</li>
-                    <li><i class="fas fa-list"></i> Tasklist</li>
-                    <li><i class="fas fa-chart-gantt"></i> Gantt diagram</li>
-                    <li><i class="fas fa-file-alt"></i> Reports</li>
-                    <li><i class="fas fa-history"></i> Log</li>
-                    <li><i class="fas fa-file-export"></i> Export work records</li>
-                    <li><i class="fas fa-cog"></i> Board settings</li>
-                    <li><i class="fas fa-edit"></i> Edit phases</li>
-                    <li><i class="fas fa-user-plus"></i> Invite friends and colleagues</li>
-                    <li><i class="fas fa-bell"></i> Notifications</li>
-                    <li><i class="fas fa-archive"></i> Archive board</li>
-                </ul>
-            </nav>
-            <div class="sidebar-footer">
-                <p>Task status</p>
-                <div class="status-chart">
-                    <!-- Simple CSS pie chart placeholder -->
-                    <div class="pie-chart"></div>
-                </div>
-            </div>
-        </aside>
-
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Navigation -->
-            <header class="top-nav">
-                <div class="nav-left">
-                    <a href="#"><i class="fas fa-th"></i> Boards</a>
-                    <a href="#"><i class="fas fa-tasks"></i> My tasks</a>
-                    <a href="#"><i class="fas fa-chart-line"></i> Team member workload</a>
-                    <a href="#"><i class="fas fa-users"></i> Team management</a>
-                </div>
-                <div class="nav-right">
-                    <div class="notification-icon">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">24</span>
-                    </div>
-                    <a href="#"><i class="fas fa-cog"></i> Settings</a>
-                    <div class="user-profile">
-                        <img src="https://via.placeholder.com/30" alt="User Avatar">
-                        <span>My Account</span>
-                    </div>
-                </div>
-            </header>
-
             <!-- Board Header -->
             <div class="board-header">
                 <div class="board-title">
                     <h1>Messe-Planung - Kanban Board</h1>
                 </div>
                 <div class="board-actions">
-                    <div class="search-task">
-                        <label>Task</label>
-                        <input type="text" placeholder="Enter title, for quick edit...">
-                        <button class="add-btn-small"><i class="fas fa-plus"></i></button>
-                    </div>
                     <button class="add-task-btn"><i class="fas fa-plus"></i> Add new Task</button>
                     <div class="filter-actions">
                         <button><i class="fas fa-filter"></i> Filter</button>
                         <button><i class="fas fa-eye"></i> View</button>
-                    </div>
-                    <div class="find-task">
-                        <label>Find task</label>
-                        <div class="search-input">
-                            <input type="text" placeholder="Find task...">
-                            <i class="fas fa-search"></i>
-                        </div>
                     </div>
                 </div>
             </div>
