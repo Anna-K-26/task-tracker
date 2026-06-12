@@ -1,46 +1,36 @@
 // Task data structure
 let tasks = [
     {
-        id: '1',
-        title: 'Briefing',
-        tag: 'DUE',
-        dueDate: '1/23/2018',
+        id: '188',
+        title: 'Сделать SOTA на русском и общаге',
         assignee: 'Franz Kiermaier',
-        effort: 2,
+        startDate: '2026-06-01',
+        endDate: '2026-06-15',
+        comment: 'Важная задача для проекта.',
         status: 'planned'
     },
     {
-        id: '2',
-        title: 'Messe-Stand Rückbau',
-        tag: 'ON HOLD',
-        dueDate: '1/31/2018',
+        id: '173',
+        title: 'Подать заявку на пилот как юр. лицо в Московском инновационном кластере',
         assignee: 'Ronny Keller',
-        effort: 3,
-        status: 'planned'
-    },
-    {
-        id: '3',
-        title: 'Einladungen verschicken',
-        tag: 'DUE',
-        dueDate: '1/15/2018',
-        assignee: 'Ronny Keller',
-        effort: 1,
+        startDate: '2026-06-05',
+        endDate: '2026-06-20',
+        comment: '',
         status: 'in-progress'
     },
     {
-        id: '4',
-        title: 'Visitenkarten und Namensschilder erstellen',
-        tag: 'DONE',
-        dueDate: '1/4/2018',
-        assignee: 'Ronny Keller',
-        effort: 2,
+        id: '191',
+        title: 'Встреча с Шевченко 7 мая',
+        assignee: 'Admin',
+        startDate: '2026-05-07',
+        endDate: '2026-05-07',
+        comment: 'Обсуждение планов.',
         status: 'done'
     }
 ];
 
 // DOM Elements
 const taskModal = document.getElementById('taskModal');
-const addTaskBtn = document.querySelector('.add-task-btn');
 const closeBtn = document.querySelector('.close');
 const addTaskForm = document.getElementById('addTaskForm');
 const columns = {
@@ -60,19 +50,10 @@ function renderTasks() {
     // Clear columns
     Object.values(columns).forEach(column => column.innerHTML = '');
     
-    // Reset counts
-    const counts = { 'planned': 0, 'in-progress': 0, 'done': 0 };
-
     tasks.forEach(task => {
         const taskCard = createTaskCard(task);
         columns[task.status].appendChild(taskCard);
-        counts[task.status]++;
     });
-
-    // Update column counts
-    document.querySelector('#planned .count').textContent = counts['planned'];
-    document.querySelector('#in-progress .count').textContent = counts['in-progress'];
-    document.querySelector('#done .count').textContent = counts['done'];
 }
 
 // Create a task card element
@@ -85,37 +66,32 @@ function createTaskCard(task) {
     
     card.addEventListener('dragstart', drag);
 
-    const tagClass = task.tag.toLowerCase().replace(' ', '-');
-    const tagDisplay = task.tag === 'DUE' ? 'tag-due' : (task.tag === 'NEW' ? 'tag-new' : 'tag-onhold');
+    const statusText = task.status === 'planned' ? 'К работе' : (task.status === 'in-progress' ? 'В работе' : 'Готово');
 
     card.innerHTML = `
-        <div class="card-toggle"><i class="fas fa-chevron-left"></i></div>
-        <span class="task-tag ${tagDisplay}">${task.tag}</span>
+        <div class="task-id">#${task.id}</div>
         <h3>${task.title}</h3>
         <div class="task-details">
             <div class="task-detail-item">
-                <i class="far fa-calendar-alt"></i>
-                <span>Due date: ${task.dueDate}</span>
+                <i class="fas fa-user-circle"></i>
+                <span>${task.assignee}</span>
             </div>
             <div class="task-detail-item">
-                <i class="fas fa-user-circle"></i>
-                <span>Assigned to: ${task.assignee}</span>
+                <i class="far fa-calendar-alt"></i>
+                <span>${formatDate(task.startDate)} - ${formatDate(task.endDate)}</span>
             </div>
         </div>
-        <div class="task-footer">
-            <div class="task-effort">
-                <span>Effort</span>
-                <div class="effort-dots">
-                    <span class="effort-dot ${task.effort >= 1 ? 'active' : ''}"></span>
-                    <span class="effort-dot ${task.effort >= 2 ? 'active' : ''}"></span>
-                    <span class="effort-dot ${task.effort >= 3 ? 'active' : ''}"></span>
-                </div>
-            </div>
-            <button class="open-btn"><i class="fas fa-external-link-alt"></i> Open</button>
-        </div>
+        ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
+        <div class="task-status-badge">${statusText}</div>
     `;
 
     return card;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
 // Drag and Drop functions
@@ -151,12 +127,14 @@ function drop(ev) {
     }
 }
 
+// Modal functions
+function openModal(status) {
+    document.getElementById('taskStatus').value = status;
+    taskModal.style.display = 'block';
+}
+
 // Event Listeners
 function setupEventListeners() {
-    addTaskBtn.addEventListener('click', () => {
-        taskModal.style.display = 'block';
-    });
-
     closeBtn.addEventListener('click', () => {
         taskModal.style.display = 'none';
     });
@@ -171,13 +149,13 @@ function setupEventListeners() {
         e.preventDefault();
         
         const newTask = {
-            id: Date.now().toString(),
+            id: Math.floor(Math.random() * 1000).toString(),
             title: document.getElementById('taskTitle').value,
-            tag: document.getElementById('taskTag').value || 'NEW',
-            dueDate: document.getElementById('taskDueDate').value || new Date().toLocaleDateString(),
-            assignee: document.getElementById('taskAssignee').value || 'Unassigned',
-            effort: parseInt(document.getElementById('taskEffort').value) || 1,
-            status: 'planned'
+            assignee: document.getElementById('taskAssignee').value,
+            startDate: document.getElementById('startDate').value,
+            endDate: document.getElementById('endDate').value,
+            comment: document.getElementById('taskComment').value,
+            status: document.getElementById('taskStatus').value
         };
 
         tasks.push(newTask);
