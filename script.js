@@ -66,15 +66,13 @@ function createTaskCard(task) {
     
     card.addEventListener('dragstart', drag);
 
-    const statusText = task.status === 'planned' ? 'К работе' : (task.status === 'in-progress' ? 'В работе' : 'Готово');
-
     card.innerHTML = `
         <div class="task-id">#${task.id}</div>
         <h3>${task.title}</h3>
         <div class="task-details">
             <div class="task-detail-item">
                 <i class="fas fa-user-circle"></i>
-                <span>${task.assignee}</span>
+                <span>Assigned to: ${task.assignee}</span>
             </div>
             <div class="task-detail-item">
                 <i class="far fa-calendar-alt"></i>
@@ -82,7 +80,9 @@ function createTaskCard(task) {
             </div>
         </div>
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
-        <div class="task-status-badge">${statusText}</div>
+        <div class="task-footer">
+            <button class="open-btn"><i class="fas fa-external-link-alt"></i> Open</button>
+        </div>
     `;
 
     return card;

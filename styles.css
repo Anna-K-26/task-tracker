@@ -1,14 +1,14 @@
 :root {
-    --primary-color: #7c4dff;
-    --bg-color: #f8f9fa;
+    --primary-color: #26a69a;
+    --bg-color: #f4f7f6;
     --sidebar-bg: #ffffff;
-    --text-color: #2d3436;
-    --text-muted: #636e72;
-    --border-color: #dfe6e9;
+    --text-color: #333;
+    --text-muted: #777;
+    --border-color: #e0e0e0;
     --card-bg: #ffffff;
-    --tag-due-bg: #ff7675;
-    --tag-new-bg: #74b9ff;
-    --tag-onhold-bg: #fab1a0;
+    --tag-due-bg: #ff5252;
+    --tag-new-bg: #4fc3f7;
+    --tag-onhold-bg: #ffb74d;
 }
 
 * {
@@ -18,7 +18,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     height: 100vh;
@@ -40,30 +40,29 @@ body {
 
 /* Board Header Styling */
 .board-header {
-    padding: 15px 25px;
+    padding: 20px;
     background-color: #ffffff;
     border-bottom: 1px solid var(--border-color);
 }
 
 .board-title h1 {
-    font-size: 20px;
-    color: var(--text-color);
-    font-weight: 600;
+    font-size: 24px;
+    color: #666;
+    font-weight: normal;
 }
 
 /* Kanban Board Styling */
 .kanban-board {
     flex: 1;
     display: flex;
-    gap: 20px;
+    gap: 15px;
     padding: 20px;
     overflow-x: auto;
-    background-color: #f1f2f6;
+    background-color: var(--bg-color);
 }
 
 .kanban-column {
-    min-width: 320px;
-    max-width: 320px;
+    min-width: 300px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -71,45 +70,41 @@ body {
 
 .column-header {
     margin-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
 }
 
 .column-info {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
-}
-
-.column-info i {
-    color: var(--text-muted);
-    font-size: 14px;
-    cursor: grab;
+    margin-bottom: 5px;
 }
 
 .column-info h2 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-color);
+    font-size: 18px;
+    font-weight: normal;
+    color: #666;
 }
 
 .add-task-col-btn {
     width: 100%;
-    padding: 10px;
-    background-color: #ffffff;
+    padding: 8px;
+    background-color: transparent;
     border: 1px dashed var(--border-color);
-    border-radius: 8px;
+    border-radius: 4px;
     color: var(--text-muted);
     font-size: 14px;
     cursor: pointer;
+    margin-top: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.2s;
 }
 
 .add-task-col-btn:hover {
-    background-color: #f8f9fa;
+    background-color: #fff;
     border-color: var(--primary-color);
     color: var(--primary-color);
 }
@@ -123,41 +118,34 @@ body {
 /* Task Card Styling */
 .task-card {
     background-color: var(--card-bg);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     border: 1px solid var(--border-color);
     cursor: grab;
     position: relative;
-    transition: transform 0.1s;
-}
-
-.task-card:hover {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 .task-card:active {
     cursor: grabbing;
-    transform: scale(1.02);
-}
-
-.task-card h3 {
-    font-size: 14px;
-    margin-bottom: 12px;
-    color: var(--text-color);
-    font-weight: 500;
-    line-height: 1.5;
 }
 
 .task-id {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 5px;
+}
+
+.task-card h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: #555;
+    line-height: 1.4;
 }
 
 .task-details {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-muted);
 }
 
@@ -165,33 +153,41 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .task-detail-item i {
     width: 14px;
-    color: var(--text-muted);
+    color: var(--primary-color);
 }
 
 .task-comment {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #f1f2f6;
+    border-top: 1px solid #f0f0f0;
     font-size: 12px;
     color: var(--text-muted);
     font-style: italic;
-    white-space: pre-wrap;
 }
 
-.task-status-badge {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background-color: #f1f2f6;
-    color: var(--text-muted);
+.task-footer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.open-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Modal Styling */
@@ -203,31 +199,23 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.4);
-    backdrop-filter: blur(2px);
+    background-color: rgba(0,0,0,0.5);
 }
 
 .modal-content {
     background-color: white;
-    margin: 5% auto;
-    padding: 25px;
-    border-radius: 12px;
-    width: 450px;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 8px;
+    width: 400px;
     position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.modal-content h2 {
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: var(--text-color);
 }
 
 .close {
     position: absolute;
     right: 20px;
     top: 20px;
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
     color: var(--text-muted);
 }
@@ -238,38 +226,24 @@ body {
 
 .form-group label {
     display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-color);
+    margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
-    padding: 10px;
+    padding: 8px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
-}
-
-.form-group textarea {
-    resize: vertical;
+    border-radius: 4px;
 }
 
 .submit-btn {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 12px;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 4px;
     cursor: pointer;
     width: 100%;
-    font-weight: 600;
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-.submit-btn:hover {
-    opacity: 0.9;
+    font-weight: bold;
 }
