@@ -81,7 +81,8 @@ function createTaskCard(task) {
         </div>
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
         <div class="task-footer">
-            <button class="open-btn"><i class="fas fa-external-link-alt"></i> Open</button>
+            <button class="open-btn" onclick="editTask('${task.id}')"><i class="fas fa-external-link-alt"></i> Open</button>
+            <button class="delete-btn" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i> Delete</button>
         </div>
     `;
 
@@ -129,8 +130,34 @@ function drop(ev) {
 
 // Modal functions
 function openModal(status) {
+    addTaskForm.reset();
+    document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
+    document.querySelector('.modal-content h2').textContent = 'Добавить задачу';
     taskModal.style.display = 'block';
+}
+
+function editTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        document.getElementById('taskId').value = task.id;
+        document.getElementById('taskStatus').value = task.status;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskAssignee').value = task.assignee;
+        document.getElementById('startDate').value = task.startDate;
+        document.getElementById('endDate').value = task.endDate;
+        document.getElementById('taskComment').value = task.comment;
+        
+        document.querySelector('.modal-content h2').textContent = 'Редактировать задачу';
+        taskModal.style.display = 'block';
+    }
+}
+
+function deleteTask(id) {
+    if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+        tasks = tasks.filter(t => t.id !== id);
+        renderTasks();
+    }
 }
 
 // Event Listeners
@@ -148,8 +175,8 @@ function setupEventListeners() {
     addTaskForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const newTask = {
-            id: Math.floor(Math.random() * 1000).toString(),
+        const id = document.getElementById('taskId').value;
+        const taskData = {
             title: document.getElementById('taskTitle').value,
             assignee: document.getElementById('taskAssignee').value,
             startDate: document.getElementById('startDate').value,
@@ -158,7 +185,21 @@ function setupEventListeners() {
             status: document.getElementById('taskStatus').value
         };
 
-        tasks.push(newTask);
+        if (id) {
+            // Edit existing task
+            const index = tasks.findIndex(t => t.id === id);
+            if (index !== -1) {
+                tasks[index] = { ...tasks[index], ...taskData };
+            }
+        } else {
+            // Add new task
+            const newTask = {
+                id: Math.floor(Math.random() * 1000).toString(),
+                ...taskData
+            };
+            tasks.push(newTask);
+        }
+
         renderTasks();
         taskModal.style.display = 'none';
         addTaskForm.reset();

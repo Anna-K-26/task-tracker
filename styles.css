@@ -173,13 +173,12 @@ body {
 .task-footer {
     margin-top: 15px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 10px;
     align-items: center;
 }
 
-.open-btn {
-    background-color: var(--primary-color);
-    color: white;
+.open-btn, .delete-btn {
     border: none;
     padding: 5px 15px;
     border-radius: 20px;
@@ -188,6 +187,19 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
+    color: white;
+}
+
+.open-btn {
+    background-color: var(--primary-color);
+}
+
+.delete-btn {
+    background-color: #ff5252;
+}
+
+.delete-btn:hover {
+    background-color: #ff1744;
 }
 
 /* Modal Styling */
