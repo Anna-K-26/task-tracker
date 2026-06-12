@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-th-large"></i>
+                    <span>Menu <small>(Manager)</small></span>
+                </div>
+                <i class="fas fa-chevron-left toggle-sidebar"></i>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><i class="fas fa-home"></i> Kanban Board</li>
+                    <li><i class="fas fa-list"></i> Tasklist</li>
+                    <li><i class="fas fa-chart-gantt"></i> Gantt diagram</li>
+                    <li><i class="fas fa-file-alt"></i> Reports</li>
+                    <li><i class="fas fa-history"></i> Log</li>
+                    <li><i class="fas fa-file-export"></i> Export work records</li>
+                    <li><i class="fas fa-cog"></i> Board settings</li>
+                    <li><i class="fas fa-edit"></i> Edit phases</li>
+                    <li><i class="fas fa-user-plus"></i> Invite friends and colleagues</li>
+                    <li><i class="fas fa-bell"></i> Notifications</li>
+                    <li><i class="fas fa-archive"></i> Archive board</li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Task status</p>
+                <div class="status-chart">
+                    <!-- Simple CSS pie chart placeholder -->
+                    <div class="pie-chart"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <div class="nav-left">
+                    <a href="#"><i class="fas fa-th"></i> Boards</a>
+                    <a href="#"><i class="fas fa-tasks"></i> My tasks</a>
+                    <a href="#"><i class="fas fa-chart-line"></i> Team member workload</a>
+                    <a href="#"><i class="fas fa-users"></i> Team management</a>
+                </div>
+                <div class="nav-right">
+                    <div class="notification-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">24</span>
+                    </div>
+                    <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                    <div class="user-profile">
+                        <img src="https://via.placeholder.com/30" alt="User Avatar">
+                        <span>My Account</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Board Header -->
+            <div class="board-header">
+                <div class="board-title">
+                    <h1>Messe-Planung - Kanban Board</h1>
+                </div>
+                <div class="board-actions">
+                    <div class="search-task">
+                        <label>Task</label>
+                        <input type="text" placeholder="Enter title, for quick edit...">
+                        <button class="add-btn-small"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <button class="add-task-btn"><i class="fas fa-plus"></i> Add new Task</button>
+                    <div class="filter-actions">
+                        <button><i class="fas fa-filter"></i> Filter</button>
+                        <button><i class="fas fa-eye"></i> View</button>
+                    </div>
+                    <div class="find-task">
+                        <label>Find task</label>
+                        <div class="search-input">
+                            <input type="text" placeholder="Find task...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="kanban-board">
+                <!-- Planned Column -->
+                <div class="kanban-column" id="planned" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-info">
+                            <span class="count">0</span>
+                            <h2>Planned</h2>
+                        </div>
+                        <p class="hint"><i class="fas fa-arrows-alt"></i> Move tasks between columns</p>
+                    </div>
+                    <div class="task-list" id="planned-tasks">
+                        <!-- Tasks will be added here -->
+                    </div>
+                </div>
+
+                <!-- In Progress Column -->
+                <div class="kanban-column" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-info">
+                            <span class="count">0</span>
+                            <h2>In Progress</h2>
+                        </div>
+                        <p class="hint"><i class="fas fa-arrows-alt"></i> Move tasks between columns</p>
+                    </div>
+                    <div class="task-list" id="in-progress-tasks">
+                        <!-- Tasks will be added here -->
+                    </div>
+                </div>
+
+                <!-- Done Column -->
+                <div class="kanban-column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="column-header">
+                        <div class="column-info">
+                            <span class="count">0</span>
+                            <h2>Done</h2>
+                        </div>
+                        <p class="hint"><i class="fas fa-arrows-alt"></i> Move tasks between columns</p>
+                    </div>
+                    <div class="task-list" id="done-tasks">
+                        <!-- Tasks will be added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for adding tasks -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Task</h2>
+            <form id="addTaskForm">
+                <div class="form-group">
+                    <label for="taskTitle">Title</label>
+                    <input type="text" id="taskTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="taskTag">Tag (e.g., DUE, NEW)</label>
+                    <input type="text" id="taskTag" placeholder="NEW">
+                </div>
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date</label>
+                    <input type="date" id="taskDueDate">
+                </div>
+                <div class="form-group">
+                    <label for="taskAssignee">Assignee</label>
+                    <input type="text" id="taskAssignee">
+                </div>
+                <div class="form-group">
+                    <label for="taskEffort">Effort (1-3)</label>
+                    <input type="number" id="taskEffort" min="1" max="3" value="1">
+                </div>
+                <button type="submit" class="submit-btn">Add Task</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
