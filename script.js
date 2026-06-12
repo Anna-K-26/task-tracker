@@ -6,6 +6,7 @@ let tasks = [
         assignee: 'Franz Kiermaier',
         startDate: '2026-06-01',
         endDate: '2026-06-15',
+        priority: '2',
         comment: 'Важная задача для проекта.',
         status: 'planned'
     },
@@ -15,6 +16,7 @@ let tasks = [
         assignee: 'Ronny Keller',
         startDate: '2026-06-05',
         endDate: '2026-06-20',
+        priority: '3',
         comment: '',
         status: 'in-progress'
     },
@@ -24,10 +26,18 @@ let tasks = [
         assignee: 'Admin',
         startDate: '2026-05-07',
         endDate: '2026-05-07',
+        priority: '1',
         comment: 'Обсуждение планов.',
         status: 'done'
     }
 ];
+
+// Sorting state
+let sorts = {
+    'planned': 'none',
+    'in-progress': 'none',
+    'done': 'none'
+};
 
 // DOM Elements
 const taskModal = document.getElementById('taskModal');
@@ -50,9 +60,33 @@ function renderTasks() {
     // Clear columns
     Object.values(columns).forEach(column => column.innerHTML = '');
     
-    tasks.forEach(task => {
-        const taskCard = createTaskCard(task);
-        columns[task.status].appendChild(taskCard);
+    // Group tasks by status
+    const groupedTasks = {
+        'planned': tasks.filter(t => t.status === 'planned'),
+        'in-progress': tasks.filter(t => t.status === 'in-progress'),
+        'done': tasks.filter(t => t.status === 'done')
+    };
+
+    // Sort tasks in each group
+    Object.keys(groupedTasks).forEach(status => {
+        const sortType = sorts[status];
+        if (sortType !== 'none') {
+            groupedTasks[status].sort((a, b) => {
+                if (sortType === 'priority') {
+                    return b.priority - a.priority; // High priority first
+                } else {
+                    return new Date(a[sortType]) - new Date(b[sortType]);
+                }
+            });
+        }
+    });
+
+    // Render sorted tasks
+    Object.keys(groupedTasks).forEach(status => {
+        groupedTasks[status].forEach(task => {
+            const taskCard = createTaskCard(task);
+            columns[status].appendChild(taskCard);
+        });
     });
 }
 
@@ -66,8 +100,13 @@ function createTaskCard(task) {
     
     card.addEventListener('dragstart', drag);
 
+    const priorityText = task.priority === '1' ? 'Low' : (task.priority === '2' ? 'Medium' : 'High');
+
     card.innerHTML = `
-        <div class="task-id">#${task.id}</div>
+        <div class="task-id">
+            <span>#${task.id}</span>
+            <span class="priority-badge priority-${task.priority}">${priorityText}</span>
+        </div>
         <h3>${task.title}</h3>
         <div class="task-details">
             <div class="task-detail-item">
@@ -118,14 +157,31 @@ function drop(ev) {
     if (target) {
         const newStatus = target.id;
         const taskId = draggedElement.dataset.taskId;
-        
-        // Update task status in data
-        const taskIndex = tasks.findIndex(t => t.id === taskId);
-        if (taskIndex !== -1) {
-            tasks[taskIndex].status = newStatus;
+        const task = tasks.find(t => t.id === taskId);
+
+        if (task) {
+            // Check if moving to "Done" and endDate is in the future
+            if (newStatus === 'done') {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const endDate = new Date(task.endDate);
+                if (endDate > today) {
+                    if (!confirm('Дата окончания этой задачи еще не наступила. Вы уверены, что хотите переместить ее в "Готово"?')) {
+                        return;
+                    }
+                }
+            }
+
+            task.status = newStatus;
             renderTasks();
         }
     }
+}
+
+// Sorting logic
+function changeSort(columnId, sortType) {
+    sorts[columnId] = sortType;
+    renderTasks();
 }
 
 // Modal functions
@@ -144,6 +200,7 @@ function editTask(id) {
         document.getElementById('taskStatus').value = task.status;
         document.getElementById('taskTitle').value = task.title;
         document.getElementById('taskAssignee').value = task.assignee;
+        document.getElementById('taskPriority').value = task.priority || '2';
         document.getElementById('startDate').value = task.startDate;
         document.getElementById('endDate').value = task.endDate;
         document.getElementById('taskComment').value = task.comment;
@@ -179,6 +236,7 @@ function setupEventListeners() {
         const taskData = {
             title: document.getElementById('taskTitle').value,
             assignee: document.getElementById('taskAssignee').value,
+            priority: document.getElementById('taskPriority').value,
             startDate: document.getElementById('startDate').value,
             endDate: document.getElementById('endDate').value,
             comment: document.getElementById('taskComment').value,

@@ -27,9 +27,17 @@
                             <i class="fas fa-ellipsis-v"></i>
                             <h2>К работе</h2>
                         </div>
-                        <button class="add-task-col-btn" onclick="openModal('planned')">
-                            <i class="fas fa-plus"></i> Добавить задачу
-                        </button>
+                        <div class="column-actions">
+                            <select class="sort-select" onchange="changeSort('planned', this.value)">
+                                <option value="none">Сортировка</option>
+                                <option value="startDate">По дате начала</option>
+                                <option value="endDate">По дате окончания</option>
+                                <option value="priority">По приоритету</option>
+                            </select>
+                            <button class="add-task-col-btn" onclick="openModal('planned')">
+                                <i class="fas fa-plus"></i> Добавить задачу
+                            </button>
+                        </div>
                     </div>
                     <div class="task-list" id="planned-tasks">
                         <!-- Tasks will be added here -->
@@ -43,9 +51,17 @@
                             <i class="fas fa-ellipsis-v"></i>
                             <h2>В работе</h2>
                         </div>
-                        <button class="add-task-col-btn" onclick="openModal('in-progress')">
-                            <i class="fas fa-plus"></i> Добавить задачу
-                        </button>
+                        <div class="column-actions">
+                            <select class="sort-select" onchange="changeSort('in-progress', this.value)">
+                                <option value="none">Сортировка</option>
+                                <option value="startDate">По дате начала</option>
+                                <option value="endDate">По дате окончания</option>
+                                <option value="priority">По приоритету</option>
+                            </select>
+                            <button class="add-task-col-btn" onclick="openModal('in-progress')">
+                                <i class="fas fa-plus"></i> Добавить задачу
+                            </button>
+                        </div>
                     </div>
                     <div class="task-list" id="in-progress-tasks">
                         <!-- Tasks will be added here -->
@@ -59,9 +75,17 @@
                             <i class="fas fa-ellipsis-v"></i>
                             <h2>Готово</h2>
                         </div>
-                        <button class="add-task-col-btn" onclick="openModal('done')">
-                            <i class="fas fa-plus"></i> Добавить задачу
-                        </button>
+                        <div class="column-actions">
+                            <select class="sort-select" onchange="changeSort('done', this.value)">
+                                <option value="none">Сортировка</option>
+                                <option value="startDate">По дате начала</option>
+                                <option value="endDate">По дате окончания</option>
+                                <option value="priority">По приоритету</option>
+                            </select>
+                            <button class="add-task-col-btn" onclick="openModal('done')">
+                                <i class="fas fa-plus"></i> Добавить задачу
+                            </button>
+                        </div>
                     </div>
                     <div class="task-list" id="done-tasks">
                         <!-- Tasks will be added here -->
@@ -86,6 +110,14 @@
                 <div class="form-group">
                     <label for="taskAssignee">Ответственный</label>
                     <input type="text" id="taskAssignee" maxlength="50" required placeholder="Введите имя или ID...">
+                </div>
+                <div class="form-group">
+                    <label for="taskPriority">Приоритет</label>
+                    <select id="taskPriority" required>
+                        <option value="1">Низкий</option>
+                        <option value="2" selected>Средний</option>
+                        <option value="3">Высокий</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="startDate">Дата начала</label>
