@@ -9,12 +9,15 @@ app = FastAPI()
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Настраиваем шаблоны
-templates = Jinja2Templates(directory="templates")
+# Настраиваем шаблоны с абсолютным путем
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        name="index.html", context={"request": request}
+    )
 
 if __name__ == "__main__":
     import uvicorn
