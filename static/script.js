@@ -72,9 +72,12 @@ let sorts = {
 // Gantt state
 let currentView = 'kanban';
 let currentScale = 'week'; // 'day', 'week', 'month'
+let ganttStartDate = new Date(); // Reference date for Gantt view
+let assigneeFilter = 'all';
 
 // DOM Elements
 let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
+let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterSelect;
 let columns = {};
 
 // Initialize the board
@@ -91,12 +94,27 @@ function initBoard() {
     ganttGridHeader = document.getElementById('gantt-grid-header');
     ganttBody = document.getElementById('gantt-body');
     scaleBtns = document.querySelectorAll('.scale-btn');
+    
+    prevPeriodBtn = document.getElementById('prev-period');
+    nextPeriodBtn = document.getElementById('next-period');
+    todayBtn = document.getElementById('today-btn');
+    assigneeFilterSelect = document.getElementById('assignee-filter');
+
+    // Set initial gantt start date to Monday of current week if scale is week
+    if (currentScale === 'week') {
+        ganttStartDate.setDate(ganttStartDate.getDate() - ganttStartDate.getDay() + 1);
+    }
+    ganttStartDate.setHours(0, 0, 0, 0);
 
     console.log('Elements found:', {
         kanbanViewBtn: !!kanbanViewBtn,
         ganttViewBtn: !!ganttViewBtn,
         kanbanContainer: !!kanbanContainer,
-        ganttContainer: !!ganttContainer
+        ganttContainer: !!ganttContainer,
+        prevPeriodBtn: !!prevPeriodBtn,
+        nextPeriodBtn: !!nextPeriodBtn,
+        todayBtn: !!todayBtn,
+        assigneeFilterSelect: !!assigneeFilterSelect
     });
 
     columns = {
@@ -105,8 +123,32 @@ function initBoard() {
         'done': document.getElementById('done-tasks')
     };
 
+    updateAssigneeFilter();
     renderTasks();
     setupEventListeners();
+}
+
+// Update assignee filter options
+function updateAssigneeFilter() {
+    if (!assigneeFilterSelect) return;
+    
+    const currentVal = assigneeFilterSelect.value;
+    const assignees = [...new Set(tasks.map(t => t.assignee))].sort();
+    
+    assigneeFilterSelect.innerHTML = '<option value="all">Все сотрудники</option>';
+    assignees.forEach(assignee => {
+        const option = document.createElement('option');
+        option.value = assignee;
+        option.textContent = assignee;
+        assigneeFilterSelect.appendChild(option);
+    });
+    
+    if (assignees.includes(currentVal)) {
+        assigneeFilterSelect.value = currentVal;
+    } else {
+        assigneeFilterSelect.value = 'all';
+        assigneeFilter = 'all';
+    }
 }
 
 // Switch between Kanban and Gantt views
@@ -133,30 +175,25 @@ function renderGanttChart() {
     ganttGridHeader.innerHTML = '';
     ganttBody.innerHTML = '';
 
-    const today = new Date();
-    let startDate, endDate, daysToShow;
+    let startDate = new Date(ganttStartDate);
+    let endDate, daysToShow;
 
     if (currentScale === 'day') {
-        // Show 7 days starting from today
-        startDate = new Date(today);
-        startDate.setHours(0, 0, 0, 0);
         daysToShow = 7;
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else if (currentScale === 'week') {
-        // Show 14 days (2 weeks)
-        startDate = new Date(today);
-        startDate.setDate(today.getDate() - today.getDay() + 1); // Start from Monday
-        startDate.setHours(0, 0, 0, 0);
         daysToShow = 14;
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else {
-        // Month scale: show full current month
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        // Month scale: show full month of the current ganttStartDate
+        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
         daysToShow = endDate.getDate();
     }
+    
+    endDate.setHours(23, 59, 59, 999);
 
     // Create Header
     const taskHeader = document.createElement('div');
@@ -167,7 +204,7 @@ function renderGanttChart() {
     const timelineHeader = document.createElement('div');
     timelineHeader.className = 'gantt-column-timeline';
     
-    const monthName = startDate.toLocaleString('ru-RU', { month: 'long' });
+    const monthName = startDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
     const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
     
     timelineHeader.innerHTML = `
@@ -192,8 +229,13 @@ function renderGanttChart() {
     
     ganttGridHeader.appendChild(timelineHeader);
 
+    // Filter tasks by assignee
+    const filteredTasks = assigneeFilter === 'all' 
+        ? tasks 
+        : tasks.filter(t => t.assignee === assigneeFilter);
+
     // Render Rows
-    tasks.forEach((task, index) => {
+    filteredTasks.forEach((task, index) => {
         const row = document.createElement('div');
         row.className = 'gantt-row';
         
@@ -252,8 +294,8 @@ function renderGanttChart() {
         ganttBody.appendChild(row);
 
         // Add connectors for specific tasks to match the image
-        if (index < tasks.length - 1) {
-            const nextTask = tasks[index + 1];
+        if (index < filteredTasks.length - 1) {
+            const nextTask = filteredTasks[index + 1];
             const taskStart = new Date(task.startDate);
             const taskEnd = new Date(task.endDate);
             const nextStart = new Date(nextTask.startDate);
@@ -270,7 +312,6 @@ function renderGanttChart() {
                     connector.className = `gantt-connector ${isOrange ? 'gantt-connector-orange' : ''}`;
                     
                     // Position the connector
-                    // It starts from the end of the current bar and goes down to the start of the next bar
                     connector.style.left = `${currentEndPos - 0.5}%`;
                     connector.style.width = `${nextStartPos - currentEndPos + 0.5}%`;
                     connector.style.top = `25px`; // Middle of current row
@@ -447,6 +488,7 @@ function deleteTask(id) {
     if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
         tasks = tasks.filter(t => t.id !== id);
         renderTasks();
+        updateAssigneeFilter();
     }
 }
 
@@ -460,8 +502,62 @@ function setupEventListeners() {
             scaleBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentScale = btn.dataset.scale;
+            
+            // Adjust ganttStartDate when scale changes to keep it sensible
+            const today = new Date();
+            if (currentScale === 'day') {
+                ganttStartDate = new Date(today);
+            } else if (currentScale === 'week') {
+                ganttStartDate = new Date(today);
+                ganttStartDate.setDate(today.getDate() - today.getDay() + 1);
+            } else {
+                ganttStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            }
+            ganttStartDate.setHours(0, 0, 0, 0);
+            
             renderGanttChart();
         });
+    });
+
+    prevPeriodBtn.addEventListener('click', () => {
+        if (currentScale === 'day') {
+            ganttStartDate.setDate(ganttStartDate.getDate() - 7);
+        } else if (currentScale === 'week') {
+            ganttStartDate.setDate(ganttStartDate.getDate() - 14);
+        } else {
+            ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
+        }
+        renderGanttChart();
+    });
+
+    nextPeriodBtn.addEventListener('click', () => {
+        if (currentScale === 'day') {
+            ganttStartDate.setDate(ganttStartDate.getDate() + 7);
+        } else if (currentScale === 'week') {
+            ganttStartDate.setDate(ganttStartDate.getDate() + 14);
+        } else {
+            ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
+        }
+        renderGanttChart();
+    });
+
+    todayBtn.addEventListener('click', () => {
+        const today = new Date();
+        if (currentScale === 'day') {
+            ganttStartDate = new Date(today);
+        } else if (currentScale === 'week') {
+            ganttStartDate = new Date(today);
+            ganttStartDate.setDate(today.getDate() - today.getDay() + 1);
+        } else {
+            ganttStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        }
+        ganttStartDate.setHours(0, 0, 0, 0);
+        renderGanttChart();
+    });
+
+    assigneeFilterSelect.addEventListener('change', (e) => {
+        assigneeFilter = e.target.value;
+        renderGanttChart();
     });
 
     closeBtn.addEventListener('click', () => {
@@ -504,6 +600,7 @@ function setupEventListeners() {
         }
 
         renderTasks();
+        updateAssigneeFilter();
         taskModal.style.display = 'none';
         addTaskForm.reset();
     });

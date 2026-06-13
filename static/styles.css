@@ -345,7 +345,54 @@ body {
 .gantt-controls {
     margin-bottom: 20px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gantt-controls-left, .gantt-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.gantt-navigation {
+    display: flex;
+    gap: 5px;
+}
+
+.nav-btn {
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background-color: #f5f5f5;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.filter-select {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .scale-switcher {

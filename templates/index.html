@@ -102,10 +102,26 @@
             <!-- Gantt Chart -->
             <div class="gantt-container" id="gantt-container" style="display: none;">
                 <div class="gantt-controls">
-                    <div class="scale-switcher">
-                        <button class="scale-btn" data-scale="day">День</button>
-                        <button class="scale-btn active" data-scale="week">Неделя</button>
-                        <button class="scale-btn" data-scale="month">Месяц</button>
+                    <div class="gantt-controls-left">
+                        <div class="scale-switcher">
+                            <button class="scale-btn" data-scale="day">День</button>
+                            <button class="scale-btn active" data-scale="week">Неделя</button>
+                            <button class="scale-btn" data-scale="month">Месяц</button>
+                        </div>
+                        <div class="gantt-navigation">
+                            <button class="nav-btn" id="prev-period"><i class="fas fa-chevron-left"></i></button>
+                            <button class="nav-btn" id="next-period"><i class="fas fa-chevron-right"></i></button>
+                            <button class="nav-btn" id="today-btn">Сегодня</button>
+                        </div>
+                    </div>
+                    <div class="gantt-controls-right">
+                        <div class="filter-group">
+                            <label for="assignee-filter">Ответственный:</label>
+                            <select id="assignee-filter" class="filter-select">
+                                <option value="all">Все сотрудники</option>
+                                <!-- Options will be populated by JS -->
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="gantt-chart-wrapper">
