@@ -179,14 +179,11 @@ function renderGanttChart() {
     let endDate, daysToShow;
 
     if (currentScale === 'day') {
-        daysToShow = 14; // Show 14 days (2 weeks)
-        // Start from the beginning of the month of ganttStartDate
-        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        daysToShow = 15; // Show 15 days
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else if (currentScale === 'week') {
-        daysToShow = 56; // Show 8 weeks (2 months roughly) to match the image style
-        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        daysToShow = 56; // Show 8 weeks (approx 2 months)
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else {
@@ -210,10 +207,11 @@ function renderGanttChart() {
     // Determine month name(s)
     let monthLabel = startDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
     if (endDate.getMonth() !== startDate.getMonth()) {
+        const startMonthName = startDate.toLocaleString('ru-RU', { month: 'long' });
         const endMonthName = endDate.toLocaleString('ru-RU', { month: 'long' });
-        monthLabel = `${startDate.toLocaleString('ru-RU', { month: 'long' })}-${endMonthName} ${startDate.getFullYear()}`;
+        monthLabel = `${startMonthName} - ${endMonthName} ${startDate.getFullYear()}`;
     }
-    const capitalizedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+    const capitalizedMonth = monthLabel.toUpperCase();
     
     timelineHeader.innerHTML = `
         <div class="gantt-month-header">${capitalizedMonth}</div>
@@ -253,7 +251,22 @@ function renderGanttChart() {
             
             const dayCell = document.createElement('div');
             dayCell.className = 'gantt-day-cell';
-            dayCell.textContent = currentDay.getDate();
+            dayCell.style.flexDirection = 'column';
+            dayCell.style.height = 'auto';
+            
+            const dayName = currentDay.toLocaleString('ru-RU', { weekday: 'short' }).toUpperCase();
+            const nameLabel = document.createElement('div');
+            nameLabel.style.fontSize = '10px';
+            nameLabel.style.color = '#999';
+            nameLabel.textContent = dayName;
+            
+            const dateLabel = document.createElement('div');
+            dateLabel.style.fontWeight = 'bold';
+            dateLabel.textContent = currentDay.getDate();
+            
+            dayCell.appendChild(nameLabel);
+            dayCell.appendChild(dateLabel);
+            
             if (currentDay.getDay() === 0 || currentDay.getDay() === 6) {
                 dayCell.style.backgroundColor = '#f5f5f5';
             }
@@ -631,25 +644,25 @@ function setupEventListeners() {
 
     prevPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
+            ganttStartDate.setDate(ganttStartDate.getDate() - 15);
         } else if (currentScale === 'week') {
-            ganttStartDate.setMonth(ganttStartDate.getMonth() - 2);
+            ganttStartDate.setDate(ganttStartDate.getDate() - 28);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
+            ganttStartDate.setDate(1);
         }
-        ganttStartDate.setDate(1); // Always start from 1st
         renderGanttChart();
     });
 
     nextPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
+            ganttStartDate.setDate(ganttStartDate.getDate() + 15);
         } else if (currentScale === 'week') {
-            ganttStartDate.setMonth(ganttStartDate.getMonth() + 2);
+            ganttStartDate.setDate(ganttStartDate.getDate() + 28);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
+            ganttStartDate.setDate(1);
         }
-        ganttStartDate.setDate(1); // Always start from 1st
         renderGanttChart();
     });
 
