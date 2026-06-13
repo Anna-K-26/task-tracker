@@ -1,34 +1,64 @@
 // Task data structure
 let tasks = [
     {
-        id: '188',
-        title: 'Сделать SOTA на русском и общаге',
-        assignee: 'Franz Kiermaier',
-        startDate: '2026-06-01',
-        endDate: '2026-06-15',
+        id: '1',
+        title: 'Изучить темы',
+        assignee: 'Антон',
+        startDate: '2026-06-02',
+        endDate: '2026-06-05',
         priority: '2',
-        comment: 'Важная задача для проекта.',
+        comment: '',
         status: 'planned'
     },
     {
-        id: '173',
-        title: 'Подать заявку на пилот как юр. лицо в Московском инновационном кластере',
-        assignee: 'Ronny Keller',
-        startDate: '2026-06-05',
-        endDate: '2026-06-20',
-        priority: '3',
+        id: '2',
+        title: 'Написать статью',
+        assignee: 'Марат',
+        startDate: '2026-06-06',
+        endDate: '2026-06-10',
+        priority: '2',
         comment: '',
         status: 'in-progress'
     },
     {
-        id: '191',
-        title: 'Встреча с Шевченко 7 мая',
-        assignee: 'Admin',
-        startDate: '2026-05-07',
-        endDate: '2026-05-07',
-        priority: '1',
-        comment: 'Обсуждение планов.',
-        status: 'done'
+        id: '3',
+        title: 'Опубликовать',
+        assignee: 'Арина',
+        startDate: '2026-06-09',
+        endDate: '2026-06-13',
+        priority: '2',
+        comment: '',
+        status: 'planned'
+    },
+    {
+        id: '4',
+        title: 'Целевой рынок',
+        assignee: 'Мария',
+        startDate: '2026-06-02',
+        endDate: '2026-06-07',
+        priority: '2',
+        comment: '',
+        status: 'in-progress'
+    },
+    {
+        id: '5',
+        title: 'Целевая аудитория',
+        assignee: 'Екатеририна',
+        startDate: '2026-06-07',
+        endDate: '2026-06-11',
+        priority: '2',
+        comment: '',
+        status: 'planned'
+    },
+    {
+        id: '6',
+        title: 'Анализ конкурентов',
+        assignee: 'Олег',
+        startDate: '2026-06-10',
+        endDate: '2026-06-15',
+        priority: '2',
+        comment: '',
+        status: 'planned'
     }
 ];
 
@@ -39,10 +69,22 @@ let sorts = {
     'done': 'none'
 };
 
+// Gantt state
+let currentView = 'kanban';
+let currentScale = 'week'; // 'day', 'week', 'month'
+
 // DOM Elements
 const taskModal = document.getElementById('taskModal');
 const closeBtn = document.querySelector('.close');
 const addTaskForm = document.getElementById('addTaskForm');
+const kanbanContainer = document.getElementById('kanban-container');
+const ganttContainer = document.getElementById('gantt-container');
+const kanbanViewBtn = document.getElementById('kanban-view');
+const ganttViewBtn = document.getElementById('gantt-view');
+const ganttGridHeader = document.getElementById('gantt-grid-header');
+const ganttBody = document.getElementById('gantt-body');
+const scaleBtns = document.querySelectorAll('.scale-btn');
+
 const columns = {
     'planned': document.getElementById('planned-tasks'),
     'in-progress': document.getElementById('in-progress-tasks'),
@@ -53,6 +95,179 @@ const columns = {
 function initBoard() {
     renderTasks();
     setupEventListeners();
+}
+
+// Switch between Kanban and Gantt views
+function switchView(view) {
+    currentView = view;
+    if (view === 'kanban') {
+        kanbanContainer.style.display = 'flex';
+        ganttContainer.style.display = 'none';
+        kanbanViewBtn.classList.add('active');
+        ganttViewBtn.classList.remove('active');
+        renderTasks();
+    } else {
+        kanbanContainer.style.display = 'none';
+        ganttContainer.style.display = 'flex';
+        kanbanViewBtn.classList.remove('active');
+        ganttViewBtn.classList.add('active');
+        renderGanttChart();
+    }
+}
+
+// Render Gantt Chart
+function renderGanttChart() {
+    ganttGridHeader.innerHTML = '';
+    ganttBody.innerHTML = '';
+
+    const today = new Date();
+    let startDate, endDate, daysToShow;
+
+    if (currentScale === 'day') {
+        // Show 7 days starting from today
+        startDate = new Date(today);
+        startDate.setHours(0, 0, 0, 0);
+        daysToShow = 7;
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + daysToShow - 1);
+    } else if (currentScale === 'week') {
+        // Show 14 days (2 weeks)
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() - today.getDay() + 1); // Start from Monday
+        startDate.setHours(0, 0, 0, 0);
+        daysToShow = 14;
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + daysToShow - 1);
+    } else {
+        // Month scale: show full current month
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        daysToShow = endDate.getDate();
+    }
+
+    // Create Header
+    const taskHeader = document.createElement('div');
+    taskHeader.className = 'gantt-column-task';
+    taskHeader.textContent = 'Задача';
+    ganttGridHeader.appendChild(taskHeader);
+
+    const timelineHeader = document.createElement('div');
+    timelineHeader.className = 'gantt-column-timeline';
+    
+    const monthName = startDate.toLocaleString('ru-RU', { month: 'long' });
+    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    
+    timelineHeader.innerHTML = `
+        <div class="gantt-month-header">${capitalizedMonth}</div>
+        <div class="gantt-days-header"></div>
+    `;
+    
+    const daysHeader = timelineHeader.querySelector('.gantt-days-header');
+    
+    for (let i = 0; i < daysToShow; i++) {
+        const currentDay = new Date(startDate);
+        currentDay.setDate(startDate.getDate() + i);
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = 'gantt-day-cell';
+        dayCell.textContent = currentDay.getDate();
+        if (currentDay.getDay() === 0 || currentDay.getDay() === 6) {
+            dayCell.style.backgroundColor = '#f5f5f5';
+        }
+        daysHeader.appendChild(dayCell);
+    }
+    
+    ganttGridHeader.appendChild(timelineHeader);
+
+    // Render Rows
+    tasks.forEach((task, index) => {
+        const row = document.createElement('div');
+        row.className = 'gantt-row';
+        
+        const taskInfo = document.createElement('div');
+        taskInfo.className = 'gantt-task-info';
+        taskInfo.textContent = task.title;
+        row.appendChild(taskInfo);
+        
+        const timelineRow = document.createElement('div');
+        timelineRow.className = 'gantt-timeline-row';
+        timelineRow.style.backgroundSize = `${100 / daysToShow}% 100%`;
+        
+        // Calculate bar position and width
+        const taskStart = new Date(task.startDate);
+        const taskEnd = new Date(task.endDate);
+        taskStart.setHours(0,0,0,0);
+        taskEnd.setHours(23,59,59,999);
+        
+        if (taskEnd >= startDate && taskStart <= endDate) {
+            const startDiff = Math.max(0, (taskStart - startDate) / (24 * 60 * 60 * 1000));
+            const endDiff = Math.min(daysToShow, (taskEnd - startDate) / (24 * 60 * 60 * 1000) + 1);
+            const duration = endDiff - startDiff;
+            
+            if (duration > 0) {
+                const cellWidth = 100 / daysToShow;
+                const left = startDiff * cellWidth;
+                const width = duration * cellWidth;
+                
+                const bar = document.createElement('div');
+                const isOrange = task.title === 'Целевой рынок' || task.title === 'Целевая аудитория' || task.title === 'Анализ конкурентов';
+                bar.className = `gantt-bar ${isOrange ? 'gantt-bar-orange' : 'gantt-bar-purple'}`;
+                bar.style.left = `${left}%`;
+                bar.style.width = `${width}%`;
+                
+                // Add assignee avatar and name
+                const assigneeInfo = document.createElement('div');
+                assigneeInfo.className = 'gantt-assignee';
+                assigneeInfo.style.left = `${left + width + 0.5}%`;
+                
+                // Use initials for avatar if no image
+                const initials = task.assignee.split(' ').map(n => n[0]).join('').toUpperCase();
+                
+                assigneeInfo.innerHTML = `
+                    <div class="gantt-avatar">
+                        <span>${initials}</span>
+                    </div>
+                    <span>${task.assignee}</span>
+                `;
+                
+                timelineRow.appendChild(bar);
+                timelineRow.appendChild(assigneeInfo);
+            }
+        }
+        
+        row.appendChild(timelineRow);
+        ganttBody.appendChild(row);
+
+        // Add connectors for specific tasks to match the image
+        if (index < tasks.length - 1) {
+            const nextTask = tasks[index + 1];
+            const taskStart = new Date(task.startDate);
+            const taskEnd = new Date(task.endDate);
+            const nextStart = new Date(nextTask.startDate);
+            
+            if (taskEnd >= startDate && taskStart <= endDate && nextStart >= startDate) {
+                const cellWidth = 100 / daysToShow;
+                const currentEndPos = (Math.min(daysToShow, (taskEnd - startDate) / (24 * 60 * 60 * 1000) + 1)) * cellWidth;
+                const nextStartPos = ((nextStart - startDate) / (24 * 60 * 60 * 1000)) * cellWidth;
+                
+                // Only connect if it makes sense (next starts after or at current end)
+                if (nextStartPos >= currentEndPos - 1) {
+                    const connector = document.createElement('div');
+                    const isOrange = task.title === 'Целевой рынок' || task.title === 'Целевая аудитория' || task.title === 'Анализ конкурентов';
+                    connector.className = `gantt-connector ${isOrange ? 'gantt-connector-orange' : ''}`;
+                    
+                    // Position the connector
+                    // It starts from the end of the current bar and goes down to the start of the next bar
+                    connector.style.left = `${currentEndPos - 0.5}%`;
+                    connector.style.width = `${nextStartPos - currentEndPos + 0.5}%`;
+                    connector.style.top = `25px`; // Middle of current row
+                    connector.style.height = `50px`; // Down to next row
+                    
+                    timelineRow.appendChild(connector);
+                }
+            }
+        }
+    });
 }
 
 // Render all tasks to their respective columns
@@ -88,6 +303,11 @@ function renderTasks() {
             columns[status].appendChild(taskCard);
         });
     });
+
+    // If we are in Gantt view, re-render it too
+    if (currentView === 'gantt') {
+        renderGanttChart();
+    }
 }
 
 // Create a task card element
@@ -219,6 +439,18 @@ function deleteTask(id) {
 
 // Event Listeners
 function setupEventListeners() {
+    kanbanViewBtn.addEventListener('click', () => switchView('kanban'));
+    ganttViewBtn.addEventListener('click', () => switchView('gantt'));
+
+    scaleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            scaleBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentScale = btn.dataset.scale;
+            renderGanttChart();
+        });
+    });
+
     closeBtn.addEventListener('click', () => {
         taskModal.style.display = 'none';
     });
