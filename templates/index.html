@@ -172,7 +172,10 @@
                     <label for="taskComment">Комментарий (до 500 символов)</label>
                     <textarea id="taskComment" maxlength="500" rows="4" placeholder="Введите комментарий..."></textarea>
                 </div>
-                <button type="submit" class="submit-btn">Сохранить</button>
+                <div class="modal-footer">
+                    <button type="button" id="deleteTaskBtn" class="delete-task-btn" style="display: none;">Удалить</button>
+                    <button type="submit" class="submit-btn">Сохранить</button>
+                </div>
             </form>
         </div>
     </div>

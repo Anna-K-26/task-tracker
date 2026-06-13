@@ -86,7 +86,7 @@ let initialEnd = null;
 
 // DOM Elements
 let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
-let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalist;
+let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalist, deleteTaskBtn;
 let columns = {};
 
 // Initialize the board
@@ -109,6 +109,7 @@ function initBoard() {
     todayBtn = document.getElementById('today-btn');
     assigneeFilterInput = document.getElementById('assignee-filter');
     assigneeDatalist = document.getElementById('assignee-list');
+    deleteTaskBtn = document.getElementById('deleteTaskBtn');
 
     // Set initial gantt start date to Monday of current week if scale is week
     if (currentScale === 'week') {
@@ -180,11 +181,11 @@ function renderGanttChart() {
     let endDate, daysToShow;
 
     if (currentScale === 'day') {
-        daysToShow = 7;
+        daysToShow = 14; // Show 14 days (2 weeks)
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else if (currentScale === 'week') {
-        daysToShow = 14;
+        daysToShow = 28; // Show 28 days (4 weeks)
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else {
@@ -547,6 +548,7 @@ function openModal(status) {
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
     document.querySelector('.modal-content h2').textContent = 'Добавить задачу';
+    if (deleteTaskBtn) deleteTaskBtn.style.display = 'none';
     taskModal.style.display = 'block';
 }
 
@@ -563,6 +565,7 @@ function editTask(id) {
         document.getElementById('taskComment').value = task.comment;
         
         document.querySelector('.modal-content h2').textContent = 'Редактировать задачу';
+        if (deleteTaskBtn) deleteTaskBtn.style.display = 'block';
         taskModal.style.display = 'block';
     }
 }
@@ -604,9 +607,9 @@ function setupEventListeners() {
 
     prevPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setDate(ganttStartDate.getDate() - 7);
-        } else if (currentScale === 'week') {
             ganttStartDate.setDate(ganttStartDate.getDate() - 14);
+        } else if (currentScale === 'week') {
+            ganttStartDate.setDate(ganttStartDate.getDate() - 28);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
         }
@@ -615,9 +618,9 @@ function setupEventListeners() {
 
     nextPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setDate(ganttStartDate.getDate() + 7);
-        } else if (currentScale === 'week') {
             ganttStartDate.setDate(ganttStartDate.getDate() + 14);
+        } else if (currentScale === 'week') {
+            ganttStartDate.setDate(ganttStartDate.getDate() + 28);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
         }
@@ -643,6 +646,16 @@ function setupEventListeners() {
         if (assigneeFilter === '') assigneeFilter = 'all';
         renderGanttChart();
     });
+
+    if (deleteTaskBtn) {
+        deleteTaskBtn.addEventListener('click', () => {
+            const id = document.getElementById('taskId').value;
+            if (id) {
+                deleteTask(id);
+                taskModal.style.display = 'none';
+            }
+        });
+    }
 
     closeBtn.addEventListener('click', () => {
         taskModal.style.display = 'none';
