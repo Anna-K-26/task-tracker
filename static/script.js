@@ -74,25 +74,29 @@ let currentView = 'kanban';
 let currentScale = 'week'; // 'day', 'week', 'month'
 
 // DOM Elements
-const taskModal = document.getElementById('taskModal');
-const closeBtn = document.querySelector('.close');
-const addTaskForm = document.getElementById('addTaskForm');
-const kanbanContainer = document.getElementById('kanban-container');
-const ganttContainer = document.getElementById('gantt-container');
-const kanbanViewBtn = document.getElementById('kanban-view');
-const ganttViewBtn = document.getElementById('gantt-view');
-const ganttGridHeader = document.getElementById('gantt-grid-header');
-const ganttBody = document.getElementById('gantt-body');
-const scaleBtns = document.querySelectorAll('.scale-btn');
-
-const columns = {
-    'planned': document.getElementById('planned-tasks'),
-    'in-progress': document.getElementById('in-progress-tasks'),
-    'done': document.getElementById('done-tasks')
-};
+let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
+let columns = {};
 
 // Initialize the board
 function initBoard() {
+    // Initialize DOM Elements
+    taskModal = document.getElementById('taskModal');
+    closeBtn = document.querySelector('.close');
+    addTaskForm = document.getElementById('addTaskForm');
+    kanbanContainer = document.getElementById('kanban-container');
+    ganttContainer = document.getElementById('gantt-container');
+    kanbanViewBtn = document.getElementById('kanban-view');
+    ganttViewBtn = document.getElementById('gantt-view');
+    ganttGridHeader = document.getElementById('gantt-grid-header');
+    ganttBody = document.getElementById('gantt-body');
+    scaleBtns = document.querySelectorAll('.scale-btn');
+
+    columns = {
+        'planned': document.getElementById('planned-tasks'),
+        'in-progress': document.getElementById('in-progress-tasks'),
+        'done': document.getElementById('done-tasks')
+    };
+
     renderTasks();
     setupEventListeners();
 }
@@ -497,4 +501,4 @@ function setupEventListeners() {
 }
 
 // Start the app
-initBoard();
+document.addEventListener('DOMContentLoaded', initBoard);
