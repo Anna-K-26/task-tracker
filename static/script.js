@@ -111,10 +111,8 @@ function initBoard() {
     assigneeDatalist = document.getElementById('assignee-list');
     deleteTaskBtn = document.getElementById('deleteTaskBtn');
 
-    // Set initial gantt start date to Monday of current week if scale is week
-    if (currentScale === 'week') {
-        ganttStartDate.setDate(ganttStartDate.getDate() - ganttStartDate.getDay() + 1);
-    }
+    // Set initial gantt start date to 1st of current month
+    ganttStartDate.setDate(1);
     ganttStartDate.setHours(0, 0, 0, 0);
 
     console.log('Elements found:', {
@@ -182,10 +180,13 @@ function renderGanttChart() {
 
     if (currentScale === 'day') {
         daysToShow = 14; // Show 14 days (2 weeks)
+        // Start from the beginning of the month of ganttStartDate
+        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else if (currentScale === 'week') {
-        daysToShow = 28; // Show 28 days (4 weeks)
+        daysToShow = 56; // Show 8 weeks (2 months roughly) to match the image style
+        startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + daysToShow - 1);
     } else {
@@ -206,8 +207,13 @@ function renderGanttChart() {
     const timelineHeader = document.createElement('div');
     timelineHeader.className = 'gantt-column-timeline';
     
-    const monthName = startDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
-    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    // Determine month name(s)
+    let monthLabel = startDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+    if (endDate.getMonth() !== startDate.getMonth()) {
+        const endMonthName = endDate.toLocaleString('ru-RU', { month: 'long' });
+        monthLabel = `${startDate.toLocaleString('ru-RU', { month: 'long' })}-${endMonthName} ${startDate.getFullYear()}`;
+    }
+    const capitalizedMonth = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
     
     timelineHeader.innerHTML = `
         <div class="gantt-month-header">${capitalizedMonth}</div>
@@ -216,17 +222,43 @@ function renderGanttChart() {
     
     const daysHeader = timelineHeader.querySelector('.gantt-days-header');
     
-    for (let i = 0; i < daysToShow; i++) {
-        const currentDay = new Date(startDate);
-        currentDay.setDate(startDate.getDate() + i);
-        
-        const dayCell = document.createElement('div');
-        dayCell.className = 'gantt-day-cell';
-        dayCell.textContent = currentDay.getDate();
-        if (currentDay.getDay() === 0 || currentDay.getDay() === 6) {
-            dayCell.style.backgroundColor = '#f5f5f5';
+    if (currentScale === 'week') {
+        // Show weeks like in the image: "Нед 1", "Нед 2", etc.
+        for (let i = 0; i < 8; i++) {
+            const weekStart = new Date(startDate);
+            weekStart.setDate(startDate.getDate() + i * 7);
+            
+            const dayCell = document.createElement('div');
+            dayCell.className = 'gantt-day-cell';
+            dayCell.style.flexDirection = 'column';
+            dayCell.style.height = 'auto';
+            
+            const dateLabel = document.createElement('div');
+            dateLabel.style.fontSize = '10px';
+            dateLabel.style.color = '#999';
+            dateLabel.textContent = `${weekStart.getDate()}.${weekStart.getMonth() + 1}`;
+            
+            const weekLabel = document.createElement('div');
+            weekLabel.style.fontWeight = 'bold';
+            weekLabel.textContent = `Нед ${i + 1}`;
+            
+            dayCell.appendChild(dateLabel);
+            dayCell.appendChild(weekLabel);
+            daysHeader.appendChild(dayCell);
         }
-        daysHeader.appendChild(dayCell);
+    } else {
+        for (let i = 0; i < daysToShow; i++) {
+            const currentDay = new Date(startDate);
+            currentDay.setDate(startDate.getDate() + i);
+            
+            const dayCell = document.createElement('div');
+            dayCell.className = 'gantt-day-cell';
+            dayCell.textContent = currentDay.getDate();
+            if (currentDay.getDay() === 0 || currentDay.getDay() === 6) {
+                dayCell.style.backgroundColor = '#f5f5f5';
+            }
+            daysHeader.appendChild(dayCell);
+        }
     }
     
     ganttGridHeader.appendChild(timelineHeader);
@@ -590,15 +622,7 @@ function setupEventListeners() {
             currentScale = btn.dataset.scale;
             
             // Adjust ganttStartDate when scale changes to keep it sensible
-            const today = new Date();
-            if (currentScale === 'day') {
-                ganttStartDate = new Date(today);
-            } else if (currentScale === 'week') {
-                ganttStartDate = new Date(today);
-                ganttStartDate.setDate(today.getDate() - today.getDay() + 1);
-            } else {
-                ganttStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
-            }
+            ganttStartDate.setDate(1);
             ganttStartDate.setHours(0, 0, 0, 0);
             
             renderGanttChart();
@@ -607,36 +631,31 @@ function setupEventListeners() {
 
     prevPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setDate(ganttStartDate.getDate() - 14);
+            ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
         } else if (currentScale === 'week') {
-            ganttStartDate.setDate(ganttStartDate.getDate() - 28);
+            ganttStartDate.setMonth(ganttStartDate.getMonth() - 2);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() - 1);
         }
+        ganttStartDate.setDate(1); // Always start from 1st
         renderGanttChart();
     });
 
     nextPeriodBtn.addEventListener('click', () => {
         if (currentScale === 'day') {
-            ganttStartDate.setDate(ganttStartDate.getDate() + 14);
+            ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
         } else if (currentScale === 'week') {
-            ganttStartDate.setDate(ganttStartDate.getDate() + 28);
+            ganttStartDate.setMonth(ganttStartDate.getMonth() + 2);
         } else {
             ganttStartDate.setMonth(ganttStartDate.getMonth() + 1);
         }
+        ganttStartDate.setDate(1); // Always start from 1st
         renderGanttChart();
     });
 
     todayBtn.addEventListener('click', () => {
-        const today = new Date();
-        if (currentScale === 'day') {
-            ganttStartDate = new Date(today);
-        } else if (currentScale === 'week') {
-            ganttStartDate = new Date(today);
-            ganttStartDate.setDate(today.getDate() - today.getDay() + 1);
-        } else {
-            ganttStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        }
+        ganttStartDate = new Date();
+        ganttStartDate.setDate(1); // Start from 1st
         ganttStartDate.setHours(0, 0, 0, 0);
         renderGanttChart();
     });
