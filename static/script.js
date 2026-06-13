@@ -79,6 +79,7 @@ let columns = {};
 
 // Initialize the board
 function initBoard() {
+    console.log('Initializing board...');
     // Initialize DOM Elements
     taskModal = document.getElementById('taskModal');
     closeBtn = document.querySelector('.close');
@@ -90,6 +91,13 @@ function initBoard() {
     ganttGridHeader = document.getElementById('gantt-grid-header');
     ganttBody = document.getElementById('gantt-body');
     scaleBtns = document.querySelectorAll('.scale-btn');
+
+    console.log('Elements found:', {
+        kanbanViewBtn: !!kanbanViewBtn,
+        ganttViewBtn: !!ganttViewBtn,
+        kanbanContainer: !!kanbanContainer,
+        ganttContainer: !!ganttContainer
+    });
 
     columns = {
         'planned': document.getElementById('planned-tasks'),
@@ -103,18 +111,19 @@ function initBoard() {
 
 // Switch between Kanban and Gantt views
 function switchView(view) {
+    console.log('Switching to view:', view);
     currentView = view;
     if (view === 'kanban') {
-        kanbanContainer.style.display = 'flex';
-        ganttContainer.style.display = 'none';
-        kanbanViewBtn.classList.add('active');
-        ganttViewBtn.classList.remove('active');
+        if (kanbanContainer) kanbanContainer.style.display = 'flex';
+        if (ganttContainer) ganttContainer.style.display = 'none';
+        if (kanbanViewBtn) kanbanViewBtn.classList.add('active');
+        if (ganttViewBtn) ganttViewBtn.classList.remove('active');
         renderTasks();
     } else {
-        kanbanContainer.style.display = 'none';
-        ganttContainer.style.display = 'flex';
-        kanbanViewBtn.classList.remove('active');
-        ganttViewBtn.classList.add('active');
+        if (kanbanContainer) kanbanContainer.style.display = 'none';
+        if (ganttContainer) ganttContainer.style.display = 'flex';
+        if (kanbanViewBtn) kanbanViewBtn.classList.remove('active');
+        if (ganttViewBtn) ganttViewBtn.classList.add('active');
         renderGanttChart();
     }
 }
@@ -501,4 +510,9 @@ function setupEventListeners() {
 }
 
 // Start the app
-document.addEventListener('DOMContentLoaded', initBoard);
+console.log('Script loaded, readyState:', document.readyState);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBoard);
+} else {
+    initBoard();
+}
