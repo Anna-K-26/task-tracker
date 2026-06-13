@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Не забудь сделать коммит! Выполни: git add . && git commit -m \"описание изменений\"'"
+          }
+        ]
+      }
+    ]
+  }
+}

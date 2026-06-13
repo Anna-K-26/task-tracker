@@ -16,7 +16,7 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
     return templates.TemplateResponse(
-        name="index.html", context={"request": request}
+        request=request, name="index.html"
     )
 
 if __name__ == "__main__":
