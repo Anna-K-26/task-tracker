@@ -117,10 +117,10 @@
                     <div class="gantt-controls-right">
                         <div class="filter-group">
                             <label for="assignee-filter">Ответственный:</label>
-                            <select id="assignee-filter" class="filter-select">
-                                <option value="all">Все сотрудники</option>
+                            <input type="text" id="assignee-filter" class="filter-input" list="assignee-list" placeholder="Все сотрудники">
+                            <datalist id="assignee-list">
                                 <!-- Options will be populated by JS -->
-                            </select>
+                            </datalist>
                         </div>
                     </div>
                 </div>

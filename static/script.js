@@ -75,9 +75,18 @@ let currentScale = 'week'; // 'day', 'week', 'month'
 let ganttStartDate = new Date(); // Reference date for Gantt view
 let assigneeFilter = 'all';
 
+// Drag/Resize state
+let isDragging = false;
+let isResizing = false;
+let dragType = null; // 'left' or 'right'
+let activeTaskId = null;
+let startX = 0;
+let initialStart = null;
+let initialEnd = null;
+
 // DOM Elements
 let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
-let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterSelect;
+let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalist;
 let columns = {};
 
 // Initialize the board
@@ -98,7 +107,8 @@ function initBoard() {
     prevPeriodBtn = document.getElementById('prev-period');
     nextPeriodBtn = document.getElementById('next-period');
     todayBtn = document.getElementById('today-btn');
-    assigneeFilterSelect = document.getElementById('assignee-filter');
+    assigneeFilterInput = document.getElementById('assignee-filter');
+    assigneeDatalist = document.getElementById('assignee-list');
 
     // Set initial gantt start date to Monday of current week if scale is week
     if (currentScale === 'week') {
@@ -114,7 +124,7 @@ function initBoard() {
         prevPeriodBtn: !!prevPeriodBtn,
         nextPeriodBtn: !!nextPeriodBtn,
         todayBtn: !!todayBtn,
-        assigneeFilterSelect: !!assigneeFilterSelect
+        assigneeFilterInput: !!assigneeFilterInput
     });
 
     columns = {
@@ -130,25 +140,16 @@ function initBoard() {
 
 // Update assignee filter options
 function updateAssigneeFilter() {
-    if (!assigneeFilterSelect) return;
+    if (!assigneeDatalist) return;
     
-    const currentVal = assigneeFilterSelect.value;
     const assignees = [...new Set(tasks.map(t => t.assignee))].sort();
     
-    assigneeFilterSelect.innerHTML = '<option value="all">Все сотрудники</option>';
+    assigneeDatalist.innerHTML = '';
     assignees.forEach(assignee => {
         const option = document.createElement('option');
         option.value = assignee;
-        option.textContent = assignee;
-        assigneeFilterSelect.appendChild(option);
+        assigneeDatalist.appendChild(option);
     });
-    
-    if (assignees.includes(currentVal)) {
-        assigneeFilterSelect.value = currentVal;
-    } else {
-        assigneeFilterSelect.value = 'all';
-        assigneeFilter = 'all';
-    }
 }
 
 // Switch between Kanban and Gantt views
@@ -265,10 +266,30 @@ function renderGanttChart() {
                 const width = duration * cellWidth;
                 
                 const bar = document.createElement('div');
-                const isOrange = task.title === 'Целевой рынок' || task.title === 'Целевая аудитория' || task.title === 'Анализ конкурентов';
-                bar.className = `gantt-bar ${isOrange ? 'gantt-bar-orange' : 'gantt-bar-purple'}`;
+                const statusClass = `gantt-bar-${task.status}`;
+                bar.className = `gantt-bar ${statusClass}`;
                 bar.style.left = `${left}%`;
                 bar.style.width = `${width}%`;
+                bar.dataset.taskId = task.id;
+                
+                // Add tooltip
+                const tooltipText = `Задача: ${task.title}\nОтветственный: ${task.assignee}${task.comment ? `\nКомментарий: ${task.comment}` : ''}`;
+                bar.setAttribute('data-tooltip', tooltipText);
+                
+                // Add click listener to edit
+                bar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    editTask(task.id);
+                });
+                
+                // Add resize handles
+                const resizerLeft = document.createElement('div');
+                resizerLeft.className = 'resizer resizer-left';
+                const resizerRight = document.createElement('div');
+                resizerRight.className = 'resizer resizer-right';
+                
+                bar.appendChild(resizerLeft);
+                bar.appendChild(resizerRight);
                 
                 // Add assignee avatar and name
                 const assigneeInfo = document.createElement('div');
@@ -287,6 +308,10 @@ function renderGanttChart() {
                 
                 timelineRow.appendChild(bar);
                 timelineRow.appendChild(assigneeInfo);
+                
+                // Event listeners for resizing
+                resizerLeft.addEventListener('mousedown', (e) => startResize(e, task.id, 'left'));
+                resizerRight.addEventListener('mousedown', (e) => startResize(e, task.id, 'right'));
             }
         }
         
@@ -308,7 +333,7 @@ function renderGanttChart() {
                 // Only connect if it makes sense (next starts after or at current end)
                 if (nextStartPos >= currentEndPos - 1) {
                     const connector = document.createElement('div');
-                    const isOrange = task.title === 'Целевой рынок' || task.title === 'Целевая аудитория' || task.title === 'Анализ конкурентов';
+                    const isOrange = task.status === 'in-progress';
                     connector.className = `gantt-connector ${isOrange ? 'gantt-connector-orange' : ''}`;
                     
                     // Position the connector
@@ -322,6 +347,64 @@ function renderGanttChart() {
             }
         }
     });
+}
+
+// Drag and Resize functions
+function startResize(e, taskId, type) {
+    e.stopPropagation();
+    isResizing = true;
+    dragType = type;
+    activeTaskId = taskId;
+    startX = e.clientX;
+    
+    const task = tasks.find(t => t.id === taskId);
+    initialStart = new Date(task.startDate);
+    initialEnd = new Date(task.endDate);
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', stopDragResize);
+}
+
+function handleMouseMove(e) {
+    if (!isResizing) return;
+    
+    const task = tasks.find(t => t.id === activeTaskId);
+    if (!task) return;
+    
+    const diffX = e.clientX - startX;
+    
+    // Calculate how many days the mouse moved
+    // We need the width of one day cell in pixels
+    const dayCell = document.querySelector('.gantt-day-cell');
+    if (!dayCell) return;
+    const dayWidth = dayCell.offsetWidth;
+    
+    const daysDiff = Math.round(diffX / dayWidth);
+    
+    if (dragType === 'left') {
+        const newStart = new Date(initialStart);
+        newStart.setDate(initialStart.getDate() + daysDiff);
+        if (newStart <= new Date(task.endDate)) {
+            task.startDate = newStart.toISOString().split('T')[0];
+        }
+    } else if (dragType === 'right') {
+        const newEnd = new Date(initialEnd);
+        newEnd.setDate(initialEnd.getDate() + daysDiff);
+        if (newEnd >= new Date(task.startDate)) {
+            task.endDate = newEnd.toISOString().split('T')[0];
+        }
+    }
+    
+    renderGanttChart();
+}
+
+function stopDragResize() {
+    isResizing = false;
+    dragType = null;
+    activeTaskId = null;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', stopDragResize);
+    renderTasks(); // To update Kanban if needed
 }
 
 // Render all tasks to their respective columns
@@ -555,8 +638,9 @@ function setupEventListeners() {
         renderGanttChart();
     });
 
-    assigneeFilterSelect.addEventListener('change', (e) => {
-        assigneeFilter = e.target.value;
+    assigneeFilterInput.addEventListener('input', (e) => {
+        assigneeFilter = e.target.value.trim() || 'all';
+        if (assigneeFilter === '') assigneeFilter = 'all';
         renderGanttChart();
     });
 

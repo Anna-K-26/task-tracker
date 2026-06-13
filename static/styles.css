@@ -385,14 +385,15 @@ body {
     color: #666;
 }
 
-.filter-select {
+.filter-input {
     padding: 6px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background-color: #fff;
     color: #333;
     font-size: 13px;
-    cursor: pointer;
+    cursor: text;
+    width: 180px;
 }
 
 .scale-switcher {
@@ -518,10 +519,55 @@ body {
     top: 19px;
     border-radius: 6px;
     z-index: 2;
+    cursor: pointer;
+    transition: transform 0.1s;
 }
 
-.gantt-bar-purple { background-color: #9575cd; }
-.gantt-bar-orange { background-color: #ff8a65; }
+.gantt-bar:hover {
+    transform: scaleY(1.2);
+}
+
+.gantt-bar-planned { background-color: #42a5f5; } /* Blue */
+.gantt-bar-in-progress { background-color: #ffa726; } /* Orange */
+.gantt-bar-done { background-color: #66bb6a; } /* Green */
+
+/* Resize handles */
+.resizer {
+    position: absolute;
+    width: 8px;
+    height: 100%;
+    top: 0;
+    cursor: col-resize;
+    z-index: 3;
+}
+
+.resizer-left { left: -4px; }
+.resizer-right { right: -4px; }
+
+/* Tooltip styling */
+.gantt-bar::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    width: max-content;
+    max-width: 250px;
+    display: none;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.gantt-bar:hover::after {
+    display: block;
+}
 
 .gantt-assignee {
     position: absolute;
