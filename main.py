@@ -1,3 +1,6 @@
+# Main entry point for the task tracker application
+# This is a task tracker app
+# Created for learning purposes
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles

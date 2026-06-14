@@ -1,14 +1,10 @@
 {
+  "version": 1,
   "hooks": {
     "postToolUse": [
       {
-        "matcher": "edit_file|write_file",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo 'Не забудь сделать коммит! Выполни: git add . && git commit -m \"описание изменений\"'"
-          }
-        ]
+        "matcher": "Write|StrReplace",
+        "command": "python .cursor/hooks/commit_reminder.py"
       }
     ]
   }

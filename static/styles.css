@@ -581,7 +581,7 @@ body {
 .gantt-bar::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 150%;
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
@@ -596,6 +596,7 @@ body {
     z-index: 100;
     pointer-events: none;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    margin-top: 5px;
 }
 
 .gantt-bar:hover::after {
