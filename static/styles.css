@@ -53,8 +53,10 @@ body {
 
 .board-title h1 {
     font-size: 24px;
-    color: #666;
+    color: rgba(102, 102, 102, 1);
     font-weight: normal;
+    background-clip: unset;
+    -webkit-background-clip: unset;
 }
 
 .view-switcher {
@@ -120,6 +122,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 5px;
+    background-color: rgba(255, 255, 255, 1);
 }
 
 .column-info h2 {
@@ -148,11 +151,13 @@ body {
 .add-task-col-btn {
     width: 100%;
     padding: 8px;
-    background-color: transparent;
-    border: 1px dashed var(--border-color);
+    background-color: rgba(255, 255, 255, 1);
+    background-image: none;
+    border: 1px dashed rgba(224, 224, 224, 1);
     border-radius: 4px;
     color: var(--text-muted);
     font-size: 14px;
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
     cursor: pointer;
     display: flex;
     align-items: center;
