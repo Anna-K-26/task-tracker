@@ -167,15 +167,20 @@ function initBoard() {
 
 // Update assignee filter options
 function updateAssigneeFilter() {
-    if (!assigneeDatalist) return;
+    console.log('Updating assignee datalists...');
+    const datalists = [document.getElementById('assignee-list')];
     
-    const assignees = [...new Set(tasks.map(t => t.assignee))].sort();
+    const assignees = [...new Set(tasks.map(t => t.assignee))].filter(a => a).sort();
+    console.log('Found assignees:', assignees);
     
-    assigneeDatalist.innerHTML = '';
-    assignees.forEach(assignee => {
-        const option = document.createElement('option');
-        option.value = assignee;
-        assigneeDatalist.appendChild(option);
+    datalists.forEach(datalist => {
+        if (!datalist) return;
+        datalist.innerHTML = '';
+        assignees.forEach(assignee => {
+            const option = document.createElement('option');
+            option.value = assignee;
+            datalist.appendChild(option);
+        });
     });
 }
 

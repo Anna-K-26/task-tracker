@@ -558,6 +558,7 @@ body {
 
 .gantt-bar:hover {
     transform: scaleY(1.2);
+    z-index: 1001; /* Ensure hovered bar and its tooltip are above everything */
 }
 
 .gantt-bar-planned { background-color: #42a5f5; } /* Blue */
@@ -593,7 +594,7 @@ body {
     width: max-content;
     max-width: 250px;
     display: none;
-    z-index: 100;
+    z-index: 1000; /* Increased z-index to stay on top */
     pointer-events: none;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     margin-top: 5px;
