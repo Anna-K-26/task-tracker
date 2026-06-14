@@ -113,6 +113,7 @@ let initialEnd = null;
 
 // DOM Elements
 let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
+let boardTitleText;
 let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalist, deleteTaskBtn;
 let columns = {};
 
@@ -130,6 +131,7 @@ function initBoard() {
     ganttGridHeader = document.getElementById('gantt-grid-header');
     ganttBody = document.getElementById('gantt-body');
     scaleBtns = document.querySelectorAll('.scale-btn');
+    boardTitleText = document.getElementById('board-title-text');
     
     prevPeriodBtn = document.getElementById('prev-period');
     nextPeriodBtn = document.getElementById('next-period');
@@ -186,12 +188,14 @@ function switchView(view) {
         if (ganttContainer) ganttContainer.style.display = 'none';
         if (kanbanViewBtn) kanbanViewBtn.classList.add('active');
         if (ganttViewBtn) ganttViewBtn.classList.remove('active');
+        if (boardTitleText) boardTitleText.textContent = 'Kanban Board';
         renderTasks();
     } else {
         if (kanbanContainer) kanbanContainer.style.display = 'none';
         if (ganttContainer) ganttContainer.style.display = 'flex';
         if (kanbanViewBtn) kanbanViewBtn.classList.remove('active');
         if (ganttViewBtn) ganttViewBtn.classList.add('active');
+        if (boardTitleText) boardTitleText.textContent = 'Gantt chart';
         renderGanttChart();
     }
 }

@@ -1,11 +1,11 @@
 [
     {
         "id": "1",
-        "title": "Изучить темы",
+        "title": "Изучить тему",
         "assignee": "Антон",
         "startDate": "2026-06-02",
         "endDate": "2026-06-05",
-        "priority": "2",
+        "priority": "1",
         "comment": "",
         "status": "planned"
     },
@@ -24,7 +24,7 @@
         "title": "Опубликовать",
         "assignee": "Арина",
         "startDate": "2026-06-09",
-        "endDate": "2026-06-13",
+        "endDate": "2026-06-20",
         "priority": "2",
         "comment": "",
         "status": "planned"
@@ -47,7 +47,7 @@
         "endDate": "2026-06-11",
         "priority": "2",
         "comment": "",
-        "status": "planned"
+        "status": "done"
     },
     {
         "id": "6",
