@@ -117,7 +117,10 @@
                     <div class="gantt-controls-right">
                         <div class="filter-group">
                             <label for="assignee-filter">Ответственный:</label>
-                            <input type="text" id="assignee-filter" class="filter-input" list="assignee-list" placeholder="Все сотрудники">
+                            <div class="custom-select-container">
+                                <input type="text" id="assignee-filter" class="filter-input" placeholder="Все сотрудники" autocomplete="off">
+                                <div id="filter-dropdown" class="custom-dropdown"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -147,7 +150,10 @@
                 </div>
                 <div class="form-group">
                     <label for="taskAssignee">Ответственный</label>
-                    <input type="text" id="taskAssignee" maxlength="50" required placeholder="Введите имя или ID..." list="assignee-list">
+                    <div class="custom-select-container">
+                        <input type="text" id="taskAssignee" maxlength="50" required placeholder="Введите имя или ID..." autocomplete="off">
+                        <div id="assignee-dropdown" class="custom-dropdown"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="taskPriority">Приоритет</label>

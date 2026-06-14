@@ -163,27 +163,64 @@ function initBoard() {
 
     fetchTasks();
     setupEventListeners();
+    
+    // Setup custom dropdowns
+    setupCustomDropdown('taskAssignee', 'assignee-dropdown');
+    setupCustomDropdown('assignee-filter', 'filter-dropdown', (name) => {
+        assigneeFilter = name;
+        renderGanttChart();
+    });
 }
 
 // Update assignee filter options
 function updateAssigneeFilter() {
-    console.log('Updating assignee datalists...');
-    const datalist = document.getElementById('assignee-list');
-    if (!datalist) {
-        console.warn('Datalist #assignee-list not found');
-        return;
-    }
-    
     const uniqueAssignees = [...new Set(tasks.map(t => t.assignee))].filter(a => a && a.trim() !== '').sort();
-    console.log('Found unique assignees:', uniqueAssignees);
     
-    datalist.innerHTML = '';
-    uniqueAssignees.forEach(assignee => {
-        const option = document.createElement('option');
-        option.value = assignee;
-        datalist.appendChild(option);
+    // We'll use these assignees to populate our custom dropdowns
+    window.availableAssignees = uniqueAssignees;
+}
+
+function setupCustomDropdown(inputId, dropdownId, onSelect) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    
+    if (!input || !dropdown) return;
+
+    function renderDropdown(filter = '') {
+        const assignees = window.availableAssignees || [];
+        const filtered = assignees.filter(a => a.toLowerCase().includes(filter.toLowerCase()));
+        
+        dropdown.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            dropdown.classList.remove('active');
+            return;
+        }
+
+        filtered.forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'dropdown-item';
+            item.innerHTML = `<i class="fas fa-file-alt"></i> ${name}`;
+            item.onclick = () => {
+                input.value = name;
+                dropdown.classList.remove('active');
+                if (onSelect) onSelect(name);
+            };
+            dropdown.appendChild(item);
+        });
+        
+        dropdown.classList.add('active');
+    }
+
+    input.addEventListener('focus', () => renderDropdown(input.value));
+    input.addEventListener('input', () => renderDropdown(input.value));
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
     });
-    console.log(`Populated datalist with ${uniqueAssignees.length} options`);
 }
 
 // Switch between Kanban and Gantt views
