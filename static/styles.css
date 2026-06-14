@@ -557,8 +557,8 @@ body {
 }
 
 .gantt-bar:hover {
-    transform: scaleY(1.2);
-    z-index: 1001; /* Ensure hovered bar and its tooltip are above everything */
+    transform: scaleY(1.3);
+    z-index: 1000;
 }
 
 .gantt-bar-planned { background-color: #42a5f5; } /* Blue */
@@ -582,22 +582,21 @@ body {
 .gantt-bar::after {
     content: attr(data-tooltip);
     position: absolute;
-    top: 100%;
+    bottom: 120%;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.9);
     color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
     white-space: pre-wrap;
     width: max-content;
-    max-width: 250px;
+    max-width: 300px;
     display: none;
-    z-index: 1000; /* Increased z-index to stay on top */
+    z-index: 9999;
     pointer-events: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    margin-top: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .gantt-bar:hover::after {

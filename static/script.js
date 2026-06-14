@@ -168,20 +168,22 @@ function initBoard() {
 // Update assignee filter options
 function updateAssigneeFilter() {
     console.log('Updating assignee datalists...');
-    const datalists = [document.getElementById('assignee-list')];
+    const datalist = document.getElementById('assignee-list');
+    if (!datalist) {
+        console.warn('Datalist #assignee-list not found');
+        return;
+    }
     
-    const assignees = [...new Set(tasks.map(t => t.assignee))].filter(a => a).sort();
-    console.log('Found assignees:', assignees);
+    const uniqueAssignees = [...new Set(tasks.map(t => t.assignee))].filter(a => a && a.trim() !== '').sort();
+    console.log('Found unique assignees:', uniqueAssignees);
     
-    datalists.forEach(datalist => {
-        if (!datalist) return;
-        datalist.innerHTML = '';
-        assignees.forEach(assignee => {
-            const option = document.createElement('option');
-            option.value = assignee;
-            datalist.appendChild(option);
-        });
+    datalist.innerHTML = '';
+    uniqueAssignees.forEach(assignee => {
+        const option = document.createElement('option');
+        option.value = assignee;
+        datalist.appendChild(option);
     });
+    console.log(`Populated datalist with ${uniqueAssignees.length} options`);
 }
 
 // Switch between Kanban and Gantt views
