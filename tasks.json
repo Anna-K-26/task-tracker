@@ -1,0 +1,62 @@
+[
+    {
+        "id": "1",
+        "title": "Изучить темы",
+        "assignee": "Антон",
+        "startDate": "2026-06-02",
+        "endDate": "2026-06-05",
+        "priority": "2",
+        "comment": "",
+        "status": "planned"
+    },
+    {
+        "id": "2",
+        "title": "Написать статью",
+        "assignee": "Марат",
+        "startDate": "2026-06-06",
+        "endDate": "2026-06-10",
+        "priority": "2",
+        "comment": "",
+        "status": "in-progress"
+    },
+    {
+        "id": "3",
+        "title": "Опубликовать",
+        "assignee": "Арина",
+        "startDate": "2026-06-09",
+        "endDate": "2026-06-13",
+        "priority": "2",
+        "comment": "",
+        "status": "planned"
+    },
+    {
+        "id": "4",
+        "title": "Целевой рынок",
+        "assignee": "Мария",
+        "startDate": "2026-06-02",
+        "endDate": "2026-06-07",
+        "priority": "2",
+        "comment": "",
+        "status": "in-progress"
+    },
+    {
+        "id": "5",
+        "title": "Целевая аудитория",
+        "assignee": "Екатеририна",
+        "startDate": "2026-06-07",
+        "endDate": "2026-06-11",
+        "priority": "2",
+        "comment": "",
+        "status": "planned"
+    },
+    {
+        "id": "6",
+        "title": "Анализ конкурентов",
+        "assignee": "Олег",
+        "startDate": "2026-06-10",
+        "endDate": "2026-06-15",
+        "priority": "2",
+        "comment": "",
+        "status": "planned"
+    }
+]

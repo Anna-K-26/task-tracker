@@ -1,66 +1,70 @@
 // Task data structure
-let tasks = [
-    {
-        id: '1',
-        title: 'Изучить темы',
-        assignee: 'Антон',
-        startDate: '2026-06-02',
-        endDate: '2026-06-05',
-        priority: '2',
-        comment: '',
-        status: 'planned'
-    },
-    {
-        id: '2',
-        title: 'Написать статью',
-        assignee: 'Марат',
-        startDate: '2026-06-06',
-        endDate: '2026-06-10',
-        priority: '2',
-        comment: '',
-        status: 'in-progress'
-    },
-    {
-        id: '3',
-        title: 'Опубликовать',
-        assignee: 'Арина',
-        startDate: '2026-06-09',
-        endDate: '2026-06-13',
-        priority: '2',
-        comment: '',
-        status: 'planned'
-    },
-    {
-        id: '4',
-        title: 'Целевой рынок',
-        assignee: 'Мария',
-        startDate: '2026-06-02',
-        endDate: '2026-06-07',
-        priority: '2',
-        comment: '',
-        status: 'in-progress'
-    },
-    {
-        id: '5',
-        title: 'Целевая аудитория',
-        assignee: 'Екатеририна',
-        startDate: '2026-06-07',
-        endDate: '2026-06-11',
-        priority: '2',
-        comment: '',
-        status: 'planned'
-    },
-    {
-        id: '6',
-        title: 'Анализ конкурентов',
-        assignee: 'Олег',
-        startDate: '2026-06-10',
-        endDate: '2026-06-15',
-        priority: '2',
-        comment: '',
-        status: 'planned'
+let tasks = [];
+
+// API functions
+async function fetchTasks() {
+    try {
+        const response = await fetch('/tasks');
+        tasks = await response.json();
+        renderTasks();
+        updateAssigneeFilter();
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
     }
-];
+}
+
+async function saveTaskOnServer(task) {
+    try {
+        const isNew = !tasks.find(t => t.id === task.id);
+        const url = isNew ? '/tasks' : `/tasks/${task.id}`;
+        const method = isNew ? 'POST' : 'PUT';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(task),
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save task');
+        }
+        
+        if (isNew) {
+            tasks.push(task);
+        } else {
+            const index = tasks.findIndex(t => t.id === task.id);
+            if (index !== -1) {
+                tasks[index] = task;
+            }
+        }
+        renderTasks();
+        updateAssigneeFilter();
+    } catch (error) {
+        console.error('Error saving task:', error);
+        alert('Ошибка при сохранении задачи на сервере');
+    }
+}
+
+async function deleteTaskFromServer(id) {
+    try {
+        const response = await fetch(`/tasks/${id}`, {
+            method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete task');
+        }
+        
+        tasks = tasks.filter(t => t.id !== id);
+        renderTasks();
+        updateAssigneeFilter();
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        alert('Ошибка при удалении задачи на сервере');
+    }
+}
 
 // Sorting state
 let sorts = {
@@ -132,8 +136,7 @@ function initBoard() {
         'done': document.getElementById('done-tasks')
     };
 
-    updateAssigneeFilter();
-    renderTasks();
+    fetchTasks();
     setupEventListeners();
 }
 
@@ -445,6 +448,12 @@ function handleMouseMove(e) {
 }
 
 function stopDragResize() {
+    if (activeTaskId) {
+        const task = tasks.find(t => t.id === activeTaskId);
+        if (task) {
+            saveTaskOnServer(task);
+        }
+    }
     isResizing = false;
     dragType = null;
     activeTaskId = null;
@@ -576,7 +585,7 @@ function drop(ev) {
             }
 
             task.status = newStatus;
-            renderTasks();
+            saveTaskOnServer(task);
         }
     }
 }
@@ -617,9 +626,7 @@ function editTask(id) {
 
 function deleteTask(id) {
     if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
-        tasks = tasks.filter(t => t.id !== id);
-        renderTasks();
-        updateAssigneeFilter();
+        deleteTaskFromServer(id);
     }
 }
 
@@ -717,7 +724,8 @@ function setupEventListeners() {
             // Edit existing task
             const index = tasks.findIndex(t => t.id === id);
             if (index !== -1) {
-                tasks[index] = { ...tasks[index], ...taskData };
+                const updatedTask = { ...tasks[index], ...taskData };
+                saveTaskOnServer(updatedTask);
             }
         } else {
             // Add new task
@@ -725,11 +733,9 @@ function setupEventListeners() {
                 id: Math.floor(Math.random() * 1000).toString(),
                 ...taskData
             };
-            tasks.push(newTask);
+            saveTaskOnServer(newTask);
         }
 
-        renderTasks();
-        updateAssigneeFilter();
         taskModal.style.display = 'none';
         addTaskForm.reset();
     });
