@@ -4,20 +4,39 @@ let tasks = [];
 // API functions
 async function fetchTasks() {
     try {
+        console.log('Fetching tasks from server...');
         const response = await fetch('/tasks');
-        tasks = await response.json();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Ошибка сервера (${response.status}): ${errorText}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            tasks = data;
+            console.log('Successfully loaded tasks:', tasks.length);
+        } else {
+            console.error('Data from server is not an array:', data);
+            tasks = [];
+        }
         renderTasks();
         updateAssigneeFilter();
     } catch (error) {
-        console.error('Error fetching tasks:', error);
+        console.error('Error in fetchTasks:', error);
+        alert('Не удалось загрузить задачи: ' + error.message);
     }
 }
 
 async function saveTaskOnServer(task) {
     try {
-        const isNew = !tasks.find(t => t.id === task.id);
+        console.log('Attempting to save task:', task);
+        // Ensure id is a string
+        if (task.id) task.id = String(task.id);
+        
+        const isNew = !tasks.find(t => String(t.id) === String(task.id));
         const url = isNew ? '/tasks' : `/tasks/${task.id}`;
         const method = isNew ? 'POST' : 'PUT';
+        
+        console.log(`Sending ${method} request to ${url}`);
         
         const response = await fetch(url, {
             method: method,
@@ -28,22 +47,26 @@ async function saveTaskOnServer(task) {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to save task');
+            const errorText = await response.text();
+            throw new Error(`Ошибка сервера (${response.status}): ${errorText}`);
         }
         
+        const savedTask = await response.json();
+        console.log('Task saved successfully:', savedTask);
+
         if (isNew) {
-            tasks.push(task);
+            tasks.push(savedTask);
         } else {
-            const index = tasks.findIndex(t => t.id === task.id);
+            const index = tasks.findIndex(t => String(t.id) === String(savedTask.id));
             if (index !== -1) {
-                tasks[index] = task;
+                tasks[index] = savedTask;
             }
         }
         renderTasks();
         updateAssigneeFilter();
     } catch (error) {
-        console.error('Error saving task:', error);
-        alert('Ошибка при сохранении задачи на сервере');
+        console.error('Error in saveTaskOnServer:', error);
+        alert('Ошибка при сохранении задачи: ' + error.message);
     }
 }
 
@@ -512,7 +535,8 @@ function createTaskCard(task) {
     
     card.addEventListener('dragstart', drag);
 
-    const priorityText = task.priority === '1' ? 'Low' : (task.priority === '2' ? 'Medium' : 'High');
+    const p = String(task.priority);
+    const priorityText = p === '1' ? 'Low' : (p === '2' ? 'Medium' : 'High');
 
     card.innerHTML = `
         <div class="task-id">

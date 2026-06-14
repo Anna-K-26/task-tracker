@@ -10,7 +10,8 @@ import json
 app = FastAPI()
 
 # Путь к файлу с задачами
-TASKS_FILE = "tasks.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TASKS_FILE = os.path.join(BASE_DIR, "tasks.json")
 
 class Task(BaseModel):
     id: str
@@ -25,12 +26,25 @@ class Task(BaseModel):
 def load_tasks():
     if not os.path.exists(TASKS_FILE):
         return []
-    with open(TASKS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(TASKS_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+            if not content:
+                return []
+            data = json.loads(content)
+            if not isinstance(data, list):
+                return []
+            return data
+    except Exception as e:
+        print(f"Error loading tasks: {e}")
+        return []
 
-def save_tasks(tasks):
-    with open(TASKS_FILE, "w", encoding="utf-8") as f:
-        json.dump(tasks, f, ensure_ascii=False, indent=4)
+def save_tasks(tasks_list):
+    try:
+        with open(TASKS_FILE, "w", encoding="utf-8") as f:
+            json.dump(tasks_list, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Error saving tasks: {e}")
 
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -45,32 +59,45 @@ async def read_item(request: Request):
         request=request, name="index.html"
     )
 
-@app.get("/tasks", response_model=List[Task])
+@app.get("/tasks")
 async def get_tasks():
-    return load_tasks()
+    tasks_data = load_tasks()
+    print(f"Returning {len(tasks_data)} tasks")
+    return tasks_data
 
-@app.post("/tasks", response_model=Task)
+@app.post("/tasks")
 async def create_task(task: Task):
-    tasks = load_tasks()
-    tasks.append(task.dict())
-    save_tasks(tasks)
+    print(f"Creating task: {task.id}")
+    tasks_data = load_tasks()
+    tasks_data.append(task.dict())
+    save_tasks(tasks_data)
     return task
 
-@app.put("/tasks/{task_id}", response_model=Task)
+@app.put("/tasks/{task_id}")
 async def update_task(task_id: str, updated_task: Task):
-    tasks = load_tasks()
-    for i, task in enumerate(tasks):
-        if task["id"] == task_id:
-            tasks[i] = updated_task.dict()
-            save_tasks(tasks)
-            return updated_task
+    print(f"Updating task: {task_id}")
+    tasks_data = load_tasks()
+    found = False
+    for i, t in enumerate(tasks_data):
+        if str(t.get("id")) == str(task_id):
+            tasks_data[i] = updated_task.dict()
+            found = True
+            break
+    
+    if found:
+        save_tasks(tasks_data)
+        return updated_task
+    
+    print(f"Task {task_id} not found for update")
     raise HTTPException(status_code=404, detail="Task not found")
 
 @app.delete("/tasks/{task_id}")
 async def delete_task(task_id: str):
+    print(f"Deleting task: {task_id}")
     tasks = load_tasks()
-    new_tasks = [t for t in tasks if t["id"] != task_id]
+    new_tasks = [t for t in tasks if str(t["id"]) != str(task_id)]
     if len(new_tasks) == len(tasks):
+        print(f"Task {task_id} not found for deletion")
         raise HTTPException(status_code=404, detail="Task not found")
     save_tasks(new_tasks)
     return {"status": "success"}
