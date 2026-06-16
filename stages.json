@@ -1,5 +1,18 @@
 [
-    {"id": "planned", "name": "К работе"},
-    {"id": "in-progress", "name": "В работе"},
-    {"id": "done", "name": "Готово"}
+    {
+        "id": "planned",
+        "name": "К работе"
+    },
+    {
+        "id": "in-progress",
+        "name": "В работе"
+    },
+    {
+        "id": "done",
+        "name": "Готово"
+    },
+    {
+        "id": "stage-1781621896557",
+        "name": "скоро начнем"
+    }
 ]

@@ -293,11 +293,13 @@ body {
 
 .modal-content {
     background-color: white;
-    margin: 10% auto;
+    margin: 5% auto;
     padding: 30px;
     border-radius: 8px;
     width: 400px;
     position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .close {
@@ -561,12 +563,12 @@ body {
     z-index: 1000;
 }
 
+/* Default bar color for dynamic stages */
+.gantt-bar { background-color: #9e9e9e; }
+
 .gantt-bar-planned { background-color: #42a5f5; } /* Blue */
 .gantt-bar-in-progress { background-color: #ffa726; } /* Orange */
 .gantt-bar-done { background-color: #66bb6a; } /* Green */
-
-/* Default bar color for dynamic stages */
-.gantt-bar { background-color: #9e9e9e; }
 
 /* Stage Management UI */
 .edit-stage-btn, .delete-stage-btn {
