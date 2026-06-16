@@ -1,8 +1,33 @@
 // Task data structure
 let tasks = [];
 let stages = [];
+let currentUser = null;
 
 // API functions
+async function fetchCurrentUser() {
+    try {
+        const response = await fetch('/me');
+        if (response.ok) {
+            currentUser = await response.json();
+        } else {
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Error fetching user:', error);
+    }
+}
+
+async function logout() {
+    try {
+        const response = await fetch('/logout', { method: 'POST' });
+        if (response.ok) {
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+}
+
 async function fetchStages() {
     try {
         const response = await fetch('/stages');
@@ -202,6 +227,7 @@ async function initBoard() {
         assigneeFilterInput: !!assigneeFilterInput
     });
 
+    await fetchCurrentUser();
     await fetchStages();
     stages.forEach(s => {
         if (!sorts[s.id]) sorts[s.id] = 'none';
@@ -988,10 +1014,9 @@ async function sendMessage(taskId) {
     const text = input.value.trim();
     if (!text) return;
     
-    const task = tasks.find(t => t.id === taskId);
     const message = {
         id: Date.now().toString(),
-        sender: task.assignee || 'Пользователь', // В идеале здесь должен быть текущий пользователь
+        sender: currentUser ? currentUser.username : 'Гость',
         text: text,
         timestamp: new Date().toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
     };

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация | Task Tracker</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f7f6;
+            height: 100vh;
+            margin: 0;
+        }
+        .auth-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .auth-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .auth-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        .auth-form .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .auth-form label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: block;
+            color: #555;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        .auth-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .auth-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+        .auth-submit:hover {
+            background-color: #00897b;
+        }
+        .auth-switch {
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .auth-switch a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #ff5252;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-logo">
+            <i class="fas fa-tasks"></i>
+            <span>TaskTracker</span>
+        </div>
+        
+        <div id="loginSection">
+            <h1 class="auth-title">С возвращением!</h1>
+            <p class="auth-subtitle">Войдите в свой аккаунт, чтобы продолжить работу</p>
+            
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Пароль</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-submit">Войти</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+            
+            <div class="auth-switch">
+                Нет аккаунта? <a href="#" onclick="toggleAuth(event, 'register')">Зарегистрироваться</a>
+            </div>
+        </div>
+
+        <div id="registerSection" style="display: none;">
+            <h1 class="auth-title">Создать аккаунт</h1>
+            <p class="auth-subtitle">Начните управлять задачами эффективно</p>
+            
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="regName">Имя пользователя</label>
+                    <input type="text" id="regName" required placeholder="Иван Иванов">
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Пароль</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="auth-submit">Зарегистрироваться</button>
+                <div id="registerError" class="error-message"></div>
+            </form>
+            
+            <div class="auth-switch">
+                Уже есть аккаунт? <a href="#" onclick="toggleAuth(event, 'login')">Войти</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAuth(e, type) {
+            e.preventDefault();
+            const loginSection = document.getElementById('loginSection');
+            const registerSection = document.getElementById('registerSection');
+            
+            if (type === 'register') {
+                loginSection.style.display = 'none';
+                registerSection.style.display = 'block';
+            } else {
+                loginSection.style.display = 'block';
+                registerSection.style.display = 'none';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = data.detail || 'Ошибка входа';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Ошибка сервера';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const errorDiv = document.getElementById('registerError');
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = data.detail || 'Ошибка регистрации';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Ошибка сервера';
+                errorDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 # Main entry point for the task tracker application
 # This is a task tracker app
 # Created for learning purposes
-from fastapi import FastAPI, Request, HTTPException, UploadFile, File
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Response, Depends
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -19,10 +19,20 @@ app = FastAPI()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TASKS_FILE = os.path.join(BASE_DIR, "tasks.json")
 STAGES_FILE = os.path.join(BASE_DIR, "stages.json")
+USERS_FILE = os.path.join(BASE_DIR, "users.json")
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
+
+class User(BaseModel):
+    username: str
+    email: str
+    password: str
+
+class LoginData(BaseModel):
+    email: str
+    password: str
 
 class Stage(BaseModel):
     id: str
@@ -100,6 +110,33 @@ def save_stages(stages_list):
     except Exception as e:
         print(f"Error saving stages: {e}")
 
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return []
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+            if not content:
+                return []
+            return json.loads(content)
+    except Exception as e:
+        print(f"Error loading users: {e}")
+        return []
+
+def save_users(users_list):
+    try:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(users_list, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Error saving users: {e}")
+
+async def get_current_user(request: Request):
+    user_id = request.cookies.get("session_id")
+    if not user_id:
+        return None
+    users = load_users()
+    return next((u for u in users if u["email"] == user_id), None)
+
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
@@ -109,9 +146,50 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
+    user = await get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login")
     return templates.TemplateResponse(
-        request=request, name="index.html"
+        request=request, name="index.html", context={"user": user}
     )
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse(request=request, name="login.html")
+
+@app.post("/login")
+async def login(data: LoginData, response: Response):
+    users = load_users()
+    user = next((u for u in users if u["email"] == data.email and u["password"] == data.password), None)
+    if not user:
+        raise HTTPException(status_code=401, detail="Неверный email или пароль")
+    
+    response.set_cookie(key="session_id", value=user["email"], httponly=True)
+    return {"status": "success", "user": {"username": user["username"], "email": user["email"]}}
+
+@app.post("/register")
+async def register(user: User, response: Response):
+    users = load_users()
+    if any(u["email"] == user.email for u in users):
+        raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
+    
+    users.append(user.dict())
+    save_users(users)
+    
+    response.set_cookie(key="session_id", value=user.email, httponly=True)
+    return {"status": "success", "user": {"username": user.username, "email": user.email}}
+
+@app.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("session_id")
+    return {"status": "success"}
+
+@app.get("/me")
+async def get_me(request: Request):
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return {"username": user["username"], "email": user["email"]}
 
 @app.get("/tasks")
 async def get_tasks():
