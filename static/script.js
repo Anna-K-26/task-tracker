@@ -2,6 +2,7 @@
 let tasks = [];
 let stages = [];
 let currentUser = null;
+let showOnlyMyTasks = false;
 
 // API functions
 async function fetchCurrentUser() {
@@ -423,9 +424,13 @@ function renderGanttChart() {
     ganttGridHeader.appendChild(timelineHeader);
 
     // Filter tasks by assignee
-    const filteredTasks = assigneeFilter === 'all' 
+    let filteredTasks = assigneeFilter === 'all' 
         ? tasks 
         : tasks.filter(t => t.assignee === assigneeFilter);
+
+    if (showOnlyMyTasks && currentUser) {
+        filteredTasks = filteredTasks.filter(t => t.assignee === currentUser.username);
+    }
 
     // Render Rows
     filteredTasks.forEach((task, index) => {
@@ -657,7 +662,12 @@ function renderTasks() {
     const groupedTasks = {};
     stages.forEach(s => groupedTasks[s.id] = []);
     
-    tasks.forEach(task => {
+    let filteredTasks = tasks;
+    if (showOnlyMyTasks && currentUser) {
+        filteredTasks = tasks.filter(t => t.assignee === currentUser.username);
+    }
+
+    filteredTasks.forEach(task => {
         if (groupedTasks[task.status]) {
             groupedTasks[task.status].push(task);
         } else {
@@ -1093,6 +1103,15 @@ function setupEventListeners() {
         ganttStartDate.setHours(0, 0, 0, 0);
         renderGanttChart();
     });
+
+    const myTasksFilterBtn = document.getElementById('myTasksFilter');
+    if (myTasksFilterBtn) {
+        myTasksFilterBtn.addEventListener('click', () => {
+            showOnlyMyTasks = !showOnlyMyTasks;
+            myTasksFilterBtn.classList.toggle('active', showOnlyMyTasks);
+            renderTasks();
+        });
+    }
 
     assigneeFilterInput.addEventListener('input', (e) => {
         assigneeFilter = e.target.value.trim() || 'all';

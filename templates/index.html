@@ -21,6 +21,11 @@
                         <button class="switcher-btn active" id="kanban-view">Канбан-доска</button>
                         <button class="switcher-btn" id="gantt-view">Диаграмма Ганта</button>
                     </div>
+                    <div class="filters-bar">
+                        <button class="filter-btn" id="myTasksFilter">
+                            <i class="fas fa-user"></i> Мои задачи
+                        </button>
+                    </div>
                     <div class="user-profile">
                         <span id="userNameDisplay"><i class="fas fa-user-circle"></i> {{ user.username }}</span>
                         <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выйти</button>

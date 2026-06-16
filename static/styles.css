@@ -77,6 +77,35 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+.filters-bar {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.filter-btn:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
 #userNameDisplay {
     font-size: 14px;
     color: #555;

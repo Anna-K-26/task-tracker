@@ -117,8 +117,8 @@
             
             <form class="auth-form" id="loginForm">
                 <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" required placeholder="example@mail.com">
+                    <label for="loginUsername">Логин</label>
+                    <input type="text" id="loginUsername" required placeholder="Введите ваш логин">
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Пароль</label>
@@ -139,12 +139,8 @@
             
             <form class="auth-form" id="registerForm">
                 <div class="form-group">
-                    <label for="regName">Имя пользователя</label>
-                    <input type="text" id="regName" required placeholder="Иван Иванов">
-                </div>
-                <div class="form-group">
-                    <label for="regEmail">Email</label>
-                    <input type="email" id="regEmail" required placeholder="example@mail.com">
+                    <label for="regUsername">Логин</label>
+                    <input type="text" id="regUsername" required placeholder="Придумайте логин">
                 </div>
                 <div class="form-group">
                     <label for="regPassword">Пароль</label>
@@ -177,7 +173,7 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
 
@@ -185,7 +181,7 @@
                 const response = await fetch('/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
@@ -203,8 +199,7 @@
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
+            const username = document.getElementById('regUsername').value;
             const password = document.getElementById('regPassword').value;
             const errorDiv = document.getElementById('registerError');
 
@@ -212,7 +207,7 @@
                 const response = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, email, password })
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();

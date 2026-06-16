@@ -27,11 +27,10 @@ if not os.path.exists(UPLOAD_DIR):
 
 class User(BaseModel):
     username: str
-    email: str
     password: str
 
 class LoginData(BaseModel):
-    email: str
+    username: str
     password: str
 
 class Stage(BaseModel):
@@ -135,7 +134,7 @@ async def get_current_user(request: Request):
     if not user_id:
         return None
     users = load_users()
-    return next((u for u in users if u["email"] == user_id), None)
+    return next((u for u in users if u["username"] == user_id), None)
 
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -160,24 +159,24 @@ async def login_page(request: Request):
 @app.post("/login")
 async def login(data: LoginData, response: Response):
     users = load_users()
-    user = next((u for u in users if u["email"] == data.email and u["password"] == data.password), None)
+    user = next((u for u in users if u["username"] == data.username and u["password"] == data.password), None)
     if not user:
-        raise HTTPException(status_code=401, detail="Неверный email или пароль")
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
     
-    response.set_cookie(key="session_id", value=user["email"], httponly=True)
-    return {"status": "success", "user": {"username": user["username"], "email": user["email"]}}
+    response.set_cookie(key="session_id", value=user["username"], httponly=True)
+    return {"status": "success", "user": {"username": user["username"]}}
 
 @app.post("/register")
 async def register(user: User, response: Response):
     users = load_users()
-    if any(u["email"] == user.email for u in users):
-        raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
+    if any(u["username"] == user.username for u in users):
+        raise HTTPException(status_code=400, detail="Пользователь с таким логином уже существует")
     
     users.append(user.dict())
     save_users(users)
     
-    response.set_cookie(key="session_id", value=user.email, httponly=True)
-    return {"status": "success", "user": {"username": user.username, "email": user.email}}
+    response.set_cookie(key="session_id", value=user.username, httponly=True)
+    return {"status": "success", "user": {"username": user.username}}
 
 @app.post("/logout")
 async def logout(response: Response):
@@ -189,7 +188,7 @@ async def get_me(request: Request):
     user = await get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return {"username": user["username"], "email": user["email"]}
+    return {"username": user["username"]}
 
 @app.get("/tasks")
 async def get_tasks():
