@@ -1,7 +1,18 @@
 // Task data structure
 let tasks = [];
+let stages = [];
 
 // API functions
+async function fetchStages() {
+    try {
+        const response = await fetch('/stages');
+        if (!response.ok) throw new Error('Failed to fetch stages');
+        stages = await response.json();
+    } catch (error) {
+        console.error('Error fetching stages:', error);
+    }
+}
+
 async function fetchTasks() {
     try {
         console.log('Fetching tasks from server...');
@@ -89,12 +100,48 @@ async function deleteTaskFromServer(id) {
     }
 }
 
+async function saveStageOnServer(stage) {
+    try {
+        const isNew = !stages.find(s => s.id === stage.id);
+        const url = isNew ? '/stages' : `/stages/${stage.id}`;
+        const method = isNew ? 'POST' : 'PUT';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stage),
+        });
+        
+        if (!response.ok) throw new Error('Failed to save stage');
+        
+        await fetchStages();
+        await fetchTasks(); // Refresh tasks as some might have changed status if a stage was deleted (though not here)
+        renderTasks();
+    } catch (error) {
+        console.error('Error saving stage:', error);
+        alert('Ошибка при сохранении стадии');
+    }
+}
+
+async function deleteStageFromServer(id) {
+    if (!confirm('Вы уверены, что хотите удалить эту стадию? Все задачи из этой стадии будут перемещены в первую доступную стадию.')) return;
+    try {
+        const response = await fetch(`/stages/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete stage');
+        
+        await fetchStages();
+        await fetchTasks();
+        renderTasks();
+    } catch (error) {
+        console.error('Error deleting stage:', error);
+        alert('Ошибка при удалении стадии');
+    }
+}
+
 // Sorting state
-let sorts = {
-    'planned': 'none',
-    'in-progress': 'none',
-    'done': 'none'
-};
+let sorts = {};
 
 // Gantt state
 let currentView = 'kanban';
@@ -155,11 +202,10 @@ function initBoard() {
         assigneeFilterInput: !!assigneeFilterInput
     });
 
-    columns = {
-        'planned': document.getElementById('planned-tasks'),
-        'in-progress': document.getElementById('in-progress-tasks'),
-        'done': document.getElementById('done-tasks')
-    };
+    await fetchStages();
+    stages.forEach(s => {
+        if (!sorts[s.id]) sorts[s.id] = 'none';
+    });
 
     fetchTasks();
     setupEventListeners();
@@ -453,7 +499,8 @@ function renderGanttChart() {
                 // Only connect if it makes sense (next starts after or at current end)
                 if (nextStartPos >= currentEndPos - 1) {
                     const connector = document.createElement('div');
-                    const isOrange = task.status === 'in-progress';
+                    const stage = stages.find(s => s.id === task.status);
+                    const isOrange = stage && (stage.name.toLowerCase().includes('работе') || stage.name.toLowerCase().includes('процесс'));
                     connector.className = `gantt-connector ${isOrange ? 'gantt-connector-orange' : ''}`;
                     
                     // Position the connector
@@ -535,20 +582,70 @@ function stopDragResize() {
 
 // Render all tasks to their respective columns
 function renderTasks() {
-    // Clear columns
-    Object.values(columns).forEach(column => column.innerHTML = '');
+    if (!kanbanContainer) return;
     
+    // Clear kanban container
+    kanbanContainer.innerHTML = '';
+    columns = {};
+    
+    // Create columns based on stages
+    stages.forEach(stage => {
+        const column = document.createElement('div');
+        column.className = 'kanban-column';
+        column.id = stage.id;
+        column.ondrop = drop;
+        column.ondragover = allowDrop;
+        
+        const currentSort = sorts[stage.id] || 'none';
+        
+        column.innerHTML = `
+            <div class="column-header">
+                <div class="column-info">
+                    <i class="fas fa-ellipsis-v"></i>
+                    <h2 id="stage-name-${stage.id}">${stage.name}</h2>
+                    <button class="edit-stage-btn" onclick="editStageName('${stage.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="delete-stage-btn" onclick="deleteStageFromServer('${stage.id}')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="column-actions">
+                    <select class="sort-select" onchange="changeSort('${stage.id}', this.value)">
+                        <option value="none" ${currentSort === 'none' ? 'selected' : ''}>Сортировка</option>
+                        <option value="startDate" ${currentSort === 'startDate' ? 'selected' : ''}>По дате начала</option>
+                        <option value="endDate" ${currentSort === 'endDate' ? 'selected' : ''}>По дате окончания</option>
+                        <option value="priority" ${currentSort === 'priority' ? 'selected' : ''}>По приоритету</option>
+                    </select>
+                    <button class="add-task-col-btn" onclick="openModal('${stage.id}')">
+                        <i class="fas fa-plus"></i> Добавить задачу
+                    </button>
+                </div>
+            </div>
+            <div class="task-list" id="${stage.id}-tasks">
+                <!-- Tasks will be added here -->
+            </div>
+        `;
+        
+        kanbanContainer.appendChild(column);
+        columns[stage.id] = document.getElementById(`${stage.id}-tasks`);
+    });
+
     // Group tasks by status
-    const groupedTasks = {
-        'planned': tasks.filter(t => t.status === 'planned'),
-        'in-progress': tasks.filter(t => t.status === 'in-progress'),
-        'done': tasks.filter(t => t.status === 'done')
-    };
+    const groupedTasks = {};
+    stages.forEach(s => groupedTasks[s.id] = []);
+    
+    tasks.forEach(task => {
+        if (groupedTasks[task.status]) {
+            groupedTasks[task.status].push(task);
+        } else {
+            // If status doesn't match any stage, put it in the first one
+            if (stages.length > 0) {
+                groupedTasks[stages[0].id].push(task);
+            }
+        }
+    });
 
     // Sort tasks in each group
     Object.keys(groupedTasks).forEach(status => {
         const sortType = sorts[status];
-        if (sortType !== 'none') {
+        if (sortType && sortType !== 'none') {
             groupedTasks[status].sort((a, b) => {
                 if (sortType === 'priority') {
                     return b.priority - a.priority; // High priority first
@@ -561,15 +658,34 @@ function renderTasks() {
 
     // Render sorted tasks
     Object.keys(groupedTasks).forEach(status => {
-        groupedTasks[status].forEach(task => {
-            const taskCard = createTaskCard(task);
-            columns[status].appendChild(taskCard);
-        });
+        if (columns[status]) {
+            groupedTasks[status].forEach(task => {
+                const taskCard = createTaskCard(task);
+                columns[status].appendChild(taskCard);
+            });
+        }
     });
 
     // If we are in Gantt view, re-render it too
     if (currentView === 'gantt') {
         renderGanttChart();
+    }
+}
+
+function addNewStage() {
+    const name = prompt('Введите название новой стадии:');
+    if (name) {
+        const id = 'stage-' + Date.now();
+        saveStageOnServer({ id, name });
+    }
+}
+
+function editStageName(id) {
+    const stage = stages.find(s => s.id === id);
+    if (!stage) return;
+    const newName = prompt('Введите новое название стадии:', stage.name);
+    if (newName && newName !== stage.name) {
+        saveStageOnServer({ ...stage, name: newName });
     }
 }
 
@@ -644,8 +760,9 @@ function drop(ev) {
         const task = tasks.find(t => t.id === taskId);
 
         if (task) {
-            // Check if moving to "Done" and endDate is in the future
-            if (newStatus === 'done') {
+            // Check if moving to a stage named "Готово" and endDate is in the future
+            const targetStage = stages.find(s => s.id === newStatus);
+            if (targetStage && targetStage.name.toLowerCase() === 'готово') {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const endDate = new Date(task.endDate);
@@ -669,8 +786,21 @@ function changeSort(columnId, sortType) {
 }
 
 // Modal functions
+function updateStatusOptions() {
+    const statusSelect = document.getElementById('taskStatus');
+    if (!statusSelect) return;
+    statusSelect.innerHTML = '';
+    stages.forEach(stage => {
+        const option = document.createElement('option');
+        option.value = stage.id;
+        option.textContent = stage.name;
+        statusSelect.appendChild(option);
+    });
+}
+
 function openModal(status) {
     addTaskForm.reset();
+    updateStatusOptions();
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
     document.querySelector('.modal-content h2').textContent = 'Добавить задачу';
@@ -681,6 +811,7 @@ function openModal(status) {
 function editTask(id) {
     const task = tasks.find(t => t.id === id);
     if (task) {
+        updateStatusOptions();
         document.getElementById('taskId').value = task.id;
         document.getElementById('taskStatus').value = task.status;
         document.getElementById('taskTitle').value = task.title;
@@ -755,6 +886,7 @@ function setupEventListeners() {
     assigneeFilterInput.addEventListener('input', (e) => {
         assigneeFilter = e.target.value.trim() || 'all';
         if (assigneeFilter === '') assigneeFilter = 'all';
+        // Dropdown handles the filtering now, but we still need this for manual entry
         renderGanttChart();
     });
 

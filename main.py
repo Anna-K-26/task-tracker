@@ -15,6 +15,11 @@ app = FastAPI()
 # Путь к файлу с задачами
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TASKS_FILE = os.path.join(BASE_DIR, "tasks.json")
+STAGES_FILE = os.path.join(BASE_DIR, "stages.json")
+
+class Stage(BaseModel):
+    id: str
+    name: str
 
 class Task(BaseModel):
     id: str
@@ -48,6 +53,32 @@ def save_tasks(tasks_list):
             json.dump(tasks_list, f, ensure_ascii=False, indent=4)
     except Exception as e:
         print(f"Error saving tasks: {e}")
+
+def load_stages():
+    if not os.path.exists(STAGES_FILE):
+        default_stages = [
+            {"id": "planned", "name": "К работе"},
+            {"id": "in-progress", "name": "В работе"},
+            {"id": "done", "name": "Готово"}
+        ]
+        save_stages(default_stages)
+        return default_stages
+    try:
+        with open(STAGES_FILE, "r", encoding="utf-8") as f:
+            content = f.read()
+            if not content:
+                return []
+            return json.loads(content)
+    except Exception as e:
+        print(f"Error loading stages: {e}")
+        return []
+
+def save_stages(stages_list):
+    try:
+        with open(STAGES_FILE, "w", encoding="utf-8") as f:
+            json.dump(stages_list, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Error saving stages: {e}")
 
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -102,6 +133,49 @@ async def delete_task(task_id: str):
         print(f"Task {task_id} not found for deletion")
         raise HTTPException(status_code=404, detail="Task not found")
     save_tasks(new_tasks)
+    return {"status": "success"}
+
+@app.get("/stages")
+async def get_stages():
+    return load_stages()
+
+@app.post("/stages")
+async def create_stage(stage: Stage):
+    stages = load_stages()
+    stages.append(stage.dict())
+    save_stages(stages)
+    return stage
+
+@app.put("/stages/{stage_id}")
+async def update_stage(stage_id: str, updated_stage: Stage):
+    stages = load_stages()
+    found = False
+    for i, s in enumerate(stages):
+        if s["id"] == stage_id:
+            stages[i] = updated_stage.dict()
+            found = True
+            break
+    if found:
+        save_stages(stages)
+        return updated_stage
+    raise HTTPException(status_code=404, detail="Stage not found")
+
+@app.delete("/stages/{stage_id}")
+async def delete_stage(stage_id: str):
+    stages = load_stages()
+    new_stages = [s for s in stages if s["id"] != stage_id]
+    if len(new_stages) == len(stages):
+        raise HTTPException(status_code=404, detail="Stage not found")
+    
+    # Also update tasks that had this status to the first available status or a default one
+    tasks = load_tasks()
+    remaining_stage_id = new_stages[0]["id"] if new_stages else "planned"
+    for t in tasks:
+        if t["status"] == stage_id:
+            t["status"] = remaining_stage_id
+    save_tasks(tasks)
+    
+    save_stages(new_stages)
     return {"status": "success"}
 
 if __name__ == "__main__":
