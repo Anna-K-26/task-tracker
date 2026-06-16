@@ -35,8 +35,7 @@
 
 1. **Клонируйте репозиторий**:
    ```bash
-   git clone <url-репозитория>
-   cd таск-трекер
+   git clone https://github.com/Anna-K-26/task-tracker.git
    ```
 
 2. **Установите зависимости**:
