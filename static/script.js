@@ -429,7 +429,10 @@ function renderGanttChart() {
         : tasks.filter(t => t.assignee === assigneeFilter);
 
     if (showOnlyMyTasks && currentUser) {
-        filteredTasks = filteredTasks.filter(t => t.assignee === currentUser.username);
+        filteredTasks = filteredTasks.filter(t => 
+            t.assignee === currentUser.username || 
+            t.assignee === currentUser.displayName
+        );
     }
 
     // Render Rows
@@ -664,7 +667,10 @@ function renderTasks() {
     
     let filteredTasks = tasks;
     if (showOnlyMyTasks && currentUser) {
-        filteredTasks = tasks.filter(t => t.assignee === currentUser.username);
+        filteredTasks = tasks.filter(t => 
+            t.assignee === currentUser.username || 
+            t.assignee === currentUser.displayName
+        );
     }
 
     filteredTasks.forEach(task => {
