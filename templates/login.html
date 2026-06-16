@@ -139,7 +139,11 @@
             
             <form class="auth-form" id="registerForm">
                 <div class="form-group">
-                    <label for="regUsername">Логин</label>
+                    <label for="regDisplayName">Ваше имя (как к вам обращаться)</label>
+                    <input type="text" id="regDisplayName" required placeholder="Иван Иванов">
+                </div>
+                <div class="form-group">
+                    <label for="regUsername">Логин (для входа)</label>
                     <input type="text" id="regUsername" required placeholder="Придумайте логин">
                 </div>
                 <div class="form-group">
@@ -199,6 +203,7 @@
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const displayName = document.getElementById('regDisplayName').value;
             const username = document.getElementById('regUsername').value;
             const password = document.getElementById('regPassword').value;
             const errorDiv = document.getElementById('registerError');
@@ -207,7 +212,7 @@
                 const response = await fetch('/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ displayName, username, password })
                 });
 
                 const data = await response.json();

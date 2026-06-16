@@ -1026,7 +1026,7 @@ async function sendMessage(taskId) {
     
     const message = {
         id: Date.now().toString(),
-        sender: currentUser ? currentUser.username : 'Гость',
+        sender: currentUser ? (currentUser.displayName || currentUser.username) : 'Гость',
         text: text,
         timestamp: new Date().toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
     };

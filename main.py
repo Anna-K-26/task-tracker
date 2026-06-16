@@ -27,6 +27,7 @@ if not os.path.exists(UPLOAD_DIR):
 
 class User(BaseModel):
     username: str
+    displayName: str
     password: str
 
 class LoginData(BaseModel):
@@ -164,7 +165,7 @@ async def login(data: LoginData, response: Response):
         raise HTTPException(status_code=401, detail="Неверный логин или пароль")
     
     response.set_cookie(key="session_id", value=user["username"], httponly=True)
-    return {"status": "success", "user": {"username": user["username"]}}
+    return {"status": "success", "user": {"username": user["username"], "displayName": user.get("displayName", user["username"])}}
 
 @app.post("/register")
 async def register(user: User, response: Response):
@@ -176,7 +177,7 @@ async def register(user: User, response: Response):
     save_users(users)
     
     response.set_cookie(key="session_id", value=user.username, httponly=True)
-    return {"status": "success", "user": {"username": user.username}}
+    return {"status": "success", "user": {"username": user.username, "displayName": user.displayName}}
 
 @app.post("/logout")
 async def logout(response: Response):
@@ -188,7 +189,7 @@ async def get_me(request: Request):
     user = await get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    return {"username": user["username"]}
+    return {"username": user["username"], "displayName": user.get("displayName", user["username"])}
 
 @app.get("/tasks")
 async def get_tasks():
