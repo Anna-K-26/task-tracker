@@ -1,0 +1,6 @@
+__pycache__/
+tasks.json
+.venv/
+*.py[cod]
+*$py.class
+.cursor/
