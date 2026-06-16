@@ -9,6 +9,9 @@ async function fetchCurrentUser() {
         const response = await fetch('/me');
         if (response.ok) {
             currentUser = await response.json();
+            if (currentUser && document.getElementById('userNameDisplay')) {
+                document.getElementById('userNameDisplay').innerHTML = `<i class="fas fa-user-circle"></i> ${currentUser.username}`;
+            }
         } else {
             window.location.href = '/login';
         }
