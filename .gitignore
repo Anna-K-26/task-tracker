@@ -4,3 +4,4 @@ tasks.json
 *.py[cod]
 *$py.class
 .cursor/
+users.json
