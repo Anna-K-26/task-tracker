@@ -1,25 +1,43 @@
 # Main entry point for the task tracker application
 # This is a task tracker app
 # Created for learning purposes
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, HTTPException, UploadFile, File
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import List, Optional
 import os
 import json
+import uuid
+import shutil
+from datetime import datetime
 
 app = FastAPI()
 
-# Путь к файлу с задачами
+# Пути к файлам
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TASKS_FILE = os.path.join(BASE_DIR, "tasks.json")
 STAGES_FILE = os.path.join(BASE_DIR, "stages.json")
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
 class Stage(BaseModel):
     id: str
     name: str
+
+class Message(BaseModel):
+    id: str
+    sender: str
+    text: str
+    timestamp: str
+
+class TaskFile(BaseModel):
+    id: str
+    name: str
+    path: str
 
 class Task(BaseModel):
     id: str
@@ -30,6 +48,8 @@ class Task(BaseModel):
     priority: str
     comment: Optional[str] = ""
     status: str
+    messages: Optional[List[Message]] = []
+    files: Optional[List[TaskFile]] = []
 
 def load_tasks():
     if not os.path.exists(TASKS_FILE):
@@ -82,6 +102,7 @@ def save_stages(stages_list):
 
 # Подключаем статические файлы (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Настраиваем шаблоны с абсолютным путем
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
@@ -177,6 +198,72 @@ async def delete_stage(stage_id: str):
     
     save_stages(new_stages)
     return {"status": "success"}
+
+# Эндпоинты для файлов
+@app.post("/tasks/{task_id}/files")
+async def upload_file(task_id: str, file: UploadFile = File(...)):
+    tasks = load_tasks()
+    task_index = next((i for i, t in enumerate(tasks) if str(t["id"]) == task_id), None)
+    if task_index is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    file_id = str(uuid.uuid4())
+    file_extension = os.path.splitext(file.filename)[1]
+    file_name = f"{file_id}{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    new_file = {
+        "id": file_id,
+        "name": file.filename,
+        "path": f"/uploads/{file_name}"
+    }
+    
+    if "files" not in tasks[task_index]:
+        tasks[task_index]["files"] = []
+    tasks[task_index]["files"].append(new_file)
+    save_tasks(tasks)
+    
+    return new_file
+
+@app.delete("/tasks/{task_id}/files/{file_id}")
+async def delete_file(task_id: str, file_id: str):
+    tasks = load_tasks()
+    task_index = next((i for i, t in enumerate(tasks) if str(t["id"]) == task_id), None)
+    if task_index is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    files = tasks[task_index].get("files", [])
+    file_to_delete = next((f for f in files if f["id"] == file_id), None)
+    if not file_to_delete:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Удаляем физический файл
+    file_path = os.path.join(BASE_DIR, file_to_delete["path"].lstrip("/"))
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    
+    tasks[task_index]["files"] = [f for f in files if f["id"] != file_id]
+    save_tasks(tasks)
+    
+    return {"status": "success"}
+
+# Эндпоинты для чата
+@app.post("/tasks/{task_id}/messages")
+async def add_message(task_id: str, message: Message):
+    tasks = load_tasks()
+    task_index = next((i for i, t in enumerate(tasks) if str(t["id"]) == task_id), None)
+    if task_index is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    if "messages" not in tasks[task_index]:
+        tasks[task_index]["messages"] = []
+    tasks[task_index]["messages"].append(message.dict())
+    save_tasks(tasks)
+    
+    return message
 
 if __name__ == "__main__":
     import uvicorn

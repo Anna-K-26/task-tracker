@@ -863,38 +863,155 @@ function openTaskPanel(id, event) {
             <button class="close-panel-btn" onclick="closeTaskPanel()">&times;</button>
         </div>
         <div class="side-panel-content">
-            <div class="panel-item">
-                <label>ID:</label>
-                <span>#${task.id}</span>
+            <div class="panel-section">
+                <div class="panel-item">
+                    <label>ID:</label>
+                    <span>#${task.id}</span>
+                </div>
+                <div class="panel-item">
+                    <label>Название:</label>
+                    <div class="panel-value-title">${task.title}</div>
+                </div>
+                <div class="panel-item">
+                    <label>Статус:</label>
+                    <span>${stages.find(s => s.id === task.status)?.name || task.status}</span>
+                </div>
+                <div class="panel-item">
+                    <label>Приоритет:</label>
+                    <span class="priority-badge priority-${task.priority}">${priorityText}</span>
+                </div>
+                <div class="panel-item">
+                    <label>Ответственный:</label>
+                    <span>${task.assignee}</span>
+                </div>
+                <div class="panel-item">
+                    <label>Сроки:</label>
+                    <span>${formatDate(task.startDate)} — ${formatDate(task.endDate)}</span>
+                </div>
+                <div class="panel-item">
+                    <label>Комментарий:</label>
+                    <div class="panel-comment">${task.comment || 'Нет комментария'}</div>
+                </div>
             </div>
-            <div class="panel-item">
-                <label>Название:</label>
-                <div class="panel-value-title">${task.title}</div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-paperclip"></i> Вложения</h3>
+                <div id="fileList" class="file-list">
+                    ${(task.files || []).map(file => `
+                        <div class="file-item">
+                            <a href="${file.path}" target="_blank"><i class="fas fa-file"></i> ${file.name}</a>
+                            <button class="delete-file-btn" onclick="deleteFile('${task.id}', '${file.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="file-upload-container">
+                    <input type="file" id="fileInput" style="display: none" onchange="uploadFile('${task.id}')">
+                    <button class="add-file-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-plus"></i> Прикрепить файл
+                    </button>
+                </div>
             </div>
-            <div class="panel-item">
-                <label>Статус:</label>
-                <span>${stages.find(s => s.id === task.status)?.name || task.status}</span>
-            </div>
-            <div class="panel-item">
-                <label>Приоритет:</label>
-                <span class="priority-badge priority-${task.priority}">${priorityText}</span>
-            </div>
-            <div class="panel-item">
-                <label>Ответственный:</label>
-                <span>${task.assignee}</span>
-            </div>
-            <div class="panel-item">
-                <label>Сроки:</label>
-                <span>${formatDate(task.startDate)} — ${formatDate(task.endDate)}</span>
-            </div>
-            <div class="panel-item">
-                <label>Комментарий:</label>
-                <div class="panel-comment">${task.comment || 'Нет комментария'}</div>
+
+            <div class="panel-section">
+                <h3><i class="fas fa-comments"></i> Чат</h3>
+                <div id="chatMessages" class="chat-messages">
+                    ${(task.messages || []).map(msg => `
+                        <div class="chat-message">
+                            <div class="message-info">
+                                <span class="message-sender">${msg.sender}</span>
+                                <span class="message-time">${msg.timestamp}</span>
+                            </div>
+                            <div class="message-text">${msg.text}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="chat-input-container">
+                    <textarea id="chatInput" placeholder="Напишите сообщение..."></textarea>
+                    <button class="send-message-btn" onclick="sendMessage('${task.id}')">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `;
 
     panel.classList.add('active');
+    
+    // Scroll chat to bottom
+    const chatMessages = panel.querySelector('#chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function uploadFile(taskId) {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) return;
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    try {
+        const response = await fetch(`/tasks/${taskId}/files`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error('Upload failed');
+        
+        await fetchTasks(); // Refresh tasks
+        openTaskPanel(taskId); // Refresh panel
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        alert('Ошибка при загрузке файла');
+    }
+}
+
+async function deleteFile(taskId, fileId) {
+    if (!confirm('Удалить этот файл?')) return;
+    
+    try {
+        const response = await fetch(`/tasks/${taskId}/files/${fileId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) throw new Error('Delete failed');
+        
+        await fetchTasks();
+        openTaskPanel(taskId);
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        alert('Ошибка при удалении файла');
+    }
+}
+
+async function sendMessage(taskId) {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    const task = tasks.find(t => t.id === taskId);
+    const message = {
+        id: Date.now().toString(),
+        sender: task.assignee || 'Пользователь', // В идеале здесь должен быть текущий пользователь
+        text: text,
+        timestamp: new Date().toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+    };
+    
+    try {
+        const response = await fetch(`/tasks/${taskId}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(message)
+        });
+        
+        if (!response.ok) throw new Error('Failed to send message');
+        
+        input.value = '';
+        await fetchTasks();
+        openTaskPanel(taskId);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Ошибка при отправке сообщения');
+    }
 }
 
 function closeTaskPanel() {
