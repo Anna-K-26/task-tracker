@@ -150,7 +150,7 @@ async def read_item(request: Request):
     if not user:
         return RedirectResponse(url="/login")
     return templates.TemplateResponse(
-        "index.html", {"request": request, "user": user}
+        request=request, name="index.html", context={"user": user}
     )
 
 @app.get("/login", response_class=HTMLResponse)
