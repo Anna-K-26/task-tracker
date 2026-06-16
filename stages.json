@@ -1,0 +1,5 @@
+[
+    {"id": "planned", "name": "К работе"},
+    {"id": "in-progress", "name": "В работе"},
+    {"id": "done", "name": "Готово"}
+]

@@ -165,7 +165,7 @@ let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalis
 let columns = {};
 
 // Initialize the board
-function initBoard() {
+async function initBoard() {
     console.log('Initializing board...');
     // Initialize DOM Elements
     taskModal = document.getElementById('taskModal');
@@ -207,7 +207,7 @@ function initBoard() {
         if (!sorts[s.id]) sorts[s.id] = 'none';
     });
 
-    fetchTasks();
+    await fetchTasks();
     setupEventListeners();
     
     // Setup custom dropdowns
@@ -278,14 +278,14 @@ function switchView(view) {
         if (ganttContainer) ganttContainer.style.display = 'none';
         if (kanbanViewBtn) kanbanViewBtn.classList.add('active');
         if (ganttViewBtn) ganttViewBtn.classList.remove('active');
-        if (boardTitleText) boardTitleText.textContent = 'Kanban Board';
+        if (boardTitleText) boardTitleText.textContent = 'Канбан-доска';
         renderTasks();
     } else {
         if (kanbanContainer) kanbanContainer.style.display = 'none';
         if (ganttContainer) ganttContainer.style.display = 'flex';
         if (kanbanViewBtn) kanbanViewBtn.classList.remove('active');
         if (ganttViewBtn) ganttViewBtn.classList.add('active');
-        if (boardTitleText) boardTitleText.textContent = 'Gantt chart';
+        if (boardTitleText) boardTitleText.textContent = 'Диаграмма Ганта';
         renderGanttChart();
     }
 }
@@ -624,7 +624,7 @@ function renderTasks() {
         `;
         
         kanbanContainer.appendChild(column);
-        columns[stage.id] = document.getElementById(`${stage.id}-tasks`);
+        columns[stage.id] = column.querySelector('.task-list');
     });
 
     // Group tasks by status
@@ -700,7 +700,7 @@ function createTaskCard(task) {
     card.addEventListener('dragstart', drag);
 
     const p = String(task.priority);
-    const priorityText = p === '1' ? 'Low' : (p === '2' ? 'Medium' : 'High');
+    const priorityText = p === '1' ? 'Низкий' : (p === '2' ? 'Средний' : 'Высокий');
 
     card.innerHTML = `
         <div class="task-id">
@@ -711,7 +711,7 @@ function createTaskCard(task) {
         <div class="task-details">
             <div class="task-detail-item">
                 <i class="fas fa-user-circle"></i>
-                <span>Assigned to: ${task.assignee}</span>
+                <span>Ответственный: ${task.assignee}</span>
             </div>
             <div class="task-detail-item">
                 <i class="far fa-calendar-alt"></i>
@@ -720,8 +720,8 @@ function createTaskCard(task) {
         </div>
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
         <div class="task-footer">
-            <button class="open-btn" onclick="editTask('${task.id}')"><i class="fas fa-external-link-alt"></i> Open</button>
-            <button class="delete-btn" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i> Delete</button>
+            <button class="open-btn" onclick="editTask('${task.id}')"><i class="fas fa-external-link-alt"></i> Открыть</button>
+            <button class="delete-btn" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i> Удалить</button>
         </div>
     `;
 
