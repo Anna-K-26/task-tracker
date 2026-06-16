@@ -360,6 +360,86 @@ body {
     background-color: #ff1744;
 }
 
+/* Side Panel Styling */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -50%;
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    z-index: 2000;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-panel.active {
+    right: 0;
+}
+
+.side-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.side-panel-header h2 {
+    font-size: 20px;
+    color: #333;
+}
+
+.close-panel-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.side-panel-content {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.panel-item {
+    margin-bottom: 20px;
+}
+
+.panel-item label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.panel-item span {
+    font-size: 16px;
+    color: #333;
+}
+
+.panel-value-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.panel-comment {
+    background-color: #f4f7f6;
+    padding: 15px;
+    border-radius: 8px;
+    font-style: italic;
+    color: #555;
+    line-height: 1.5;
+}
+
 /* Gantt Chart Styling */
 .gantt-container {
     flex: 1;

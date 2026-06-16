@@ -720,10 +720,17 @@ function createTaskCard(task) {
         </div>
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
         <div class="task-footer">
-            <button class="open-btn" onclick="editTask('${task.id}')"><i class="fas fa-external-link-alt"></i> Открыть</button>
-            <button class="delete-btn" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i> Удалить</button>
+            <button class="open-btn" onclick="openTaskPanel('${task.id}', event)"><i class="fas fa-external-link-alt"></i> Открыть</button>
+            <button class="delete-btn" onclick="deleteTask('${task.id}', event)"><i class="fas fa-trash"></i> Удалить</button>
         </div>
     `;
+
+    card.addEventListener('click', (e) => {
+        // Only open edit modal if we didn't click a button in the footer
+        if (!e.target.closest('.task-footer')) {
+            editTask(task.id);
+        }
+    });
 
     return card;
 }
@@ -827,10 +834,72 @@ function editTask(id) {
     }
 }
 
-function deleteTask(id) {
+function deleteTask(id, event) {
+    if (event) event.stopPropagation();
     if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
         deleteTaskFromServer(id);
     }
+}
+
+function openTaskPanel(id, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    let panel = document.getElementById('taskSidePanel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'taskSidePanel';
+        panel.className = 'side-panel';
+        document.body.appendChild(panel);
+    }
+
+    const p = String(task.priority);
+    const priorityText = p === '1' ? 'Низкий' : (p === '2' ? 'Средний' : 'Высокий');
+
+    panel.innerHTML = `
+        <div class="side-panel-header">
+            <h2>Информация о задаче</h2>
+            <button class="close-panel-btn" onclick="closeTaskPanel()">&times;</button>
+        </div>
+        <div class="side-panel-content">
+            <div class="panel-item">
+                <label>ID:</label>
+                <span>#${task.id}</span>
+            </div>
+            <div class="panel-item">
+                <label>Название:</label>
+                <div class="panel-value-title">${task.title}</div>
+            </div>
+            <div class="panel-item">
+                <label>Статус:</label>
+                <span>${stages.find(s => s.id === task.status)?.name || task.status}</span>
+            </div>
+            <div class="panel-item">
+                <label>Приоритет:</label>
+                <span class="priority-badge priority-${task.priority}">${priorityText}</span>
+            </div>
+            <div class="panel-item">
+                <label>Ответственный:</label>
+                <span>${task.assignee}</span>
+            </div>
+            <div class="panel-item">
+                <label>Сроки:</label>
+                <span>${formatDate(task.startDate)} — ${formatDate(task.endDate)}</span>
+            </div>
+            <div class="panel-item">
+                <label>Комментарий:</label>
+                <div class="panel-comment">${task.comment || 'Нет комментария'}</div>
+            </div>
+        </div>
+    `;
+
+    panel.classList.add('active');
+}
+
+function closeTaskPanel() {
+    const panel = document.getElementById('taskSidePanel');
+    if (panel) panel.classList.remove('active');
 }
 
 // Event Listeners
