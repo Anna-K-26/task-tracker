@@ -918,7 +918,7 @@ function openTaskPanel(id, event) {
                 </div>
                 <div class="panel-item">
                     <label>Название:</label>
-                    <input type="text" id="panelTitleInput" class="panel-input" value="${task.title}">
+                    <input type="text" id="panelTitleInput" class="panel-input" value="${task.title}" maxlength="100">
                 </div>
                 <div class="panel-item">
                     <label>Статус:</label>
@@ -937,7 +937,7 @@ function openTaskPanel(id, event) {
                 <div class="panel-item">
                     <label>Ответственный:</label>
                     <div class="custom-select-container">
-                        <input type="text" id="panelAssigneeInput" class="panel-input" value="${task.assignee}" autocomplete="off">
+                        <input type="text" id="panelAssigneeInput" class="panel-input" value="${task.assignee}" autocomplete="off" maxlength="50">
                         <div id="panel-assignee-dropdown" class="custom-dropdown"></div>
                     </div>
                 </div>
@@ -951,7 +951,7 @@ function openTaskPanel(id, event) {
                 </div>
                 <div class="panel-item">
                     <label>Комментарий:</label>
-                    <textarea id="panelCommentInput" class="panel-comment-edit" placeholder="Добавьте комментарий...">${task.comment || ''}</textarea>
+                    <textarea id="panelCommentInput" class="panel-comment-edit" placeholder="Добавьте комментарий..." maxlength="500">${task.comment || ''}</textarea>
                 </div>
                 <button class="save-task-panel-btn" onclick="saveTaskFromPanel('${task.id}')">
                     <i class="fas fa-save"></i> Сохранить изменения
