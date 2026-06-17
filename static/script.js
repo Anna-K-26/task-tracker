@@ -301,14 +301,12 @@ function setupCustomDropdown(inputId, dropdownId, onSelect) {
 function switchView(view) {
     console.log('Switching to view:', view);
     currentView = view;
-    const addStageBtn = document.getElementById('add-stage-btn');
     if (view === 'kanban') {
         if (kanbanBoardWrapper) kanbanBoardWrapper.style.display = 'flex';
         if (ganttContainer) ganttContainer.style.display = 'none';
         if (kanbanViewBtn) kanbanViewBtn.classList.add('active');
         if (ganttViewBtn) ganttViewBtn.classList.remove('active');
         if (boardTitleText) boardTitleText.textContent = 'Канбан-доска';
-        if (addStageBtn) addStageBtn.style.display = 'flex';
         renderTasks();
     } else {
         if (kanbanBoardWrapper) kanbanBoardWrapper.style.display = 'none';
@@ -316,7 +314,6 @@ function switchView(view) {
         if (kanbanViewBtn) kanbanViewBtn.classList.remove('active');
         if (ganttViewBtn) ganttViewBtn.classList.add('active');
         if (boardTitleText) boardTitleText.textContent = 'Диаграмма Ганта';
-        if (addStageBtn) addStageBtn.style.display = 'none';
         renderGanttChart();
     }
 }

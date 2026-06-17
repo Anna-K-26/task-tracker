@@ -51,6 +51,12 @@ body {
     align-items: center;
 }
 
+.board-title {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .board-title h1 {
     font-size: 24px;
     color: rgba(102, 102, 102, 1);
@@ -59,11 +65,26 @@ body {
     -webkit-background-clip: unset;
 }
 
-.view-switcher-container {
+.add-stage-btn-top {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 2px dashed var(--border-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    width: fit-content;
+}
+
+.add-stage-btn-top:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .view-switcher {
@@ -111,27 +132,6 @@ body {
 
 .filter-btn:hover:not(.active) {
     background-color: #f5f5f5;
-}
-
-.add-stage-btn-header {
-    background-color: #e0f2f1;
-    border: 1px solid var(--primary-color);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    color: var(--primary-color);
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-}
-
-.add-stage-btn-header:hover {
-    background-color: var(--primary-color);
-    color: white;
-    box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
 }
 
 #userNameDisplay {
