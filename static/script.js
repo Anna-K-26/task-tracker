@@ -185,7 +185,7 @@ let initialStart = null;
 let initialEnd = null;
 
 // DOM Elements
-let taskModal, closeBtn, addTaskForm, kanbanContainer, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
+let taskModal, closeBtn, addTaskForm, kanbanContainer, kanbanBoardWrapper, ganttContainer, kanbanViewBtn, ganttViewBtn, ganttGridHeader, ganttBody, scaleBtns;
 let boardTitleText;
 let prevPeriodBtn, nextPeriodBtn, todayBtn, assigneeFilterInput, assigneeDatalist, deleteTaskBtn;
 let columns = {};
@@ -198,6 +198,7 @@ async function initBoard() {
     closeBtn = document.querySelector('.close');
     addTaskForm = document.getElementById('addTaskForm');
     kanbanContainer = document.getElementById('kanban-container');
+    kanbanBoardWrapper = document.querySelector('.kanban-board-wrapper');
     ganttContainer = document.getElementById('gantt-container');
     kanbanViewBtn = document.getElementById('kanban-view');
     ganttViewBtn = document.getElementById('gantt-view');
@@ -301,14 +302,14 @@ function switchView(view) {
     console.log('Switching to view:', view);
     currentView = view;
     if (view === 'kanban') {
-        if (kanbanContainer) kanbanContainer.style.display = 'flex';
+        if (kanbanBoardWrapper) kanbanBoardWrapper.style.display = 'flex';
         if (ganttContainer) ganttContainer.style.display = 'none';
         if (kanbanViewBtn) kanbanViewBtn.classList.add('active');
         if (ganttViewBtn) ganttViewBtn.classList.remove('active');
         if (boardTitleText) boardTitleText.textContent = 'Канбан-доска';
         renderTasks();
     } else {
-        if (kanbanContainer) kanbanContainer.style.display = 'none';
+        if (kanbanBoardWrapper) kanbanBoardWrapper.style.display = 'none';
         if (ganttContainer) ganttContainer.style.display = 'flex';
         if (kanbanViewBtn) kanbanViewBtn.classList.remove('active');
         if (ganttViewBtn) ganttViewBtn.classList.add('active');

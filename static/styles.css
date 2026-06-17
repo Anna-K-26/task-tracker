@@ -160,44 +160,13 @@ body {
 }
 
 /* Kanban Board Styling */
-.kanban-board-wrapper {
+.kanban-board {
     flex: 1;
     display: flex;
+    gap: 15px;
+    padding: 20px;
     overflow-x: auto;
     background-color: var(--bg-color);
-    padding: 20px;
-}
-
-.kanban-board {
-    display: flex;
-    gap: 15px;
-}
-
-.add-column-wrapper {
-    padding-left: 15px;
-    min-width: 300px;
-}
-
-.add-stage-column-btn {
-    width: 100%;
-    height: 50px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    color: var(--text-muted);
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.2s;
-}
-
-.add-stage-column-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background-color: #fff;
 }
 
 .kanban-column {
@@ -905,32 +874,45 @@ body {
     color: #ff5252;
 }
 
-.add-stage-container {
-    padding: 20px;
+.kanban-board-wrapper {
+    flex: 1;
     display: flex;
-    align-items: flex-start;
+    overflow-x: auto;
+    background-color: var(--bg-color);
+    padding: 20px;
 }
 
-.add-stage-btn {
+.kanban-board {
+    display: flex;
+    gap: 15px;
+}
+
+.add-stage-column {
     min-width: 200px;
-    padding: 15px;
-    background-color: rgba(255, 255, 255, 1);
+    padding-top: 10px;
+}
+
+.add-stage-btn-top {
+    width: 100%;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.6);
     border: 2px dashed var(--border-color);
     border-radius: 8px;
     color: var(--text-muted);
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s;
 }
 
-.add-stage-btn:hover {
+.add-stage-btn-top:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
     background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* Resize handles */
