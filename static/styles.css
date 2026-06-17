@@ -486,6 +486,26 @@ body {
     color: #333;
 }
 
+.edit-task-panel-btn {
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.edit-task-panel-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
 .close-panel-btn {
     background: none;
     border: none;
@@ -531,6 +551,42 @@ body {
     font-style: italic;
     color: #555;
     line-height: 1.5;
+}
+
+.panel-comment-edit {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    margin-bottom: 10px;
+    resize: vertical;
+    background-color: #f9f9f9;
+}
+
+.panel-comment-edit:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #fff;
+}
+
+.save-comment-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+    font-weight: 600;
+}
+
+.save-comment-btn:hover {
+    background-color: #00897b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .panel-section {

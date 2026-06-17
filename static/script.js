@@ -483,7 +483,7 @@ function renderGanttChart() {
                 // Add click listener to edit
                 bar.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    editTask(task.id);
+                    openTaskPanel(task.id);
                 });
                 
                 // Add resize handles
@@ -774,7 +774,7 @@ function createTaskCard(task) {
     card.addEventListener('click', (e) => {
         // Only open edit modal if we didn't click a button in the footer
         if (!e.target.closest('.task-footer')) {
-            editTask(task.id);
+            openTaskPanel(task.id);
         }
     });
 
@@ -906,7 +906,12 @@ function openTaskPanel(id, event) {
     panel.innerHTML = `
         <div class="side-panel-header">
             <h2>Информация о задаче</h2>
-            <button class="close-panel-btn" onclick="closeTaskPanel()">&times;</button>
+            <div style="display: flex; align-items: center;">
+                <button class="edit-task-panel-btn" onclick="editTask('${task.id}')">
+                    <i class="fas fa-edit"></i> Изменить
+                </button>
+                <button class="close-panel-btn" onclick="closeTaskPanel()">&times;</button>
+            </div>
         </div>
         <div class="side-panel-content">
             <div class="panel-section">
@@ -936,7 +941,8 @@ function openTaskPanel(id, event) {
                 </div>
                 <div class="panel-item">
                     <label>Комментарий:</label>
-                    <div class="panel-comment">${task.comment || 'Нет комментария'}</div>
+                    <textarea id="panelCommentInput" class="panel-comment-edit" placeholder="Добавьте комментарий...">${task.comment || ''}</textarea>
+                    <button class="save-comment-btn" onclick="updateTaskComment('${task.id}')">Сохранить комментарий</button>
                 </div>
             </div>
 
@@ -1056,6 +1062,20 @@ async function sendMessage(taskId) {
     } catch (error) {
         console.error('Error sending message:', error);
         alert('Ошибка при отправке сообщения');
+    }
+}
+
+async function updateTaskComment(taskId) {
+    const commentInput = document.getElementById('panelCommentInput');
+    const newComment = commentInput.value.trim();
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (task) {
+        task.comment = newComment;
+        await saveTaskOnServer(task);
+        // Refresh the panel to show updated info if needed, 
+        // though textarea already has the value.
+        // But saveTaskOnServer will trigger a re-render of the board.
     }
 }
 
