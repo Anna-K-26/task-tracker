@@ -59,6 +59,13 @@ body {
     -webkit-background-clip: unset;
 }
 
+.view-switcher-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
 .view-switcher {
     display: flex;
     background-color: #eee;
@@ -104,6 +111,27 @@ body {
 
 .filter-btn:hover:not(.active) {
     background-color: #f5f5f5;
+}
+
+.add-stage-btn-header {
+    background-color: #e0f2f1;
+    border: 1px solid var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--primary-color);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.add-stage-btn-header:hover {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(38, 166, 154, 0.3);
 }
 
 #userNameDisplay {
@@ -885,34 +913,6 @@ body {
 .kanban-board {
     display: flex;
     gap: 15px;
-}
-
-.add-stage-column {
-    min-width: 200px;
-    padding-top: 10px;
-}
-
-.add-stage-btn-top {
-    width: 100%;
-    padding: 12px;
-    background-color: rgba(255, 255, 255, 0.6);
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
-    color: var(--text-muted);
-    font-size: 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-}
-
-.add-stage-btn-top:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* Resize handles */
