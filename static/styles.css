@@ -486,26 +486,6 @@ body {
     color: #333;
 }
 
-.edit-task-panel-btn {
-    background: none;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    margin-right: 15px;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.edit-task-panel-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
-
 .close-panel-btn {
     background: none;
     border: none;
@@ -536,6 +516,24 @@ body {
 .panel-item span {
     font-size: 16px;
     color: #333;
+}
+
+.panel-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    background-color: #f9f9f9;
+    transition: all 0.2s;
+}
+
+.panel-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(38, 166, 154, 0.1);
 }
 
 .panel-value-title {
@@ -572,21 +570,28 @@ body {
     background-color: #fff;
 }
 
-.save-comment-btn {
+.save-task-panel-btn {
+    width: 100%;
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s;
+    font-size: 14px;
     font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
 }
 
-.save-comment-btn:hover {
+.save-task-panel-btn:hover {
     background-color: #00897b;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(38, 166, 154, 0.3);
+    transform: translateY(-1px);
 }
 
 .panel-section {

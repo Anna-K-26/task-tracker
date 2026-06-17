@@ -907,9 +907,6 @@ function openTaskPanel(id, event) {
         <div class="side-panel-header">
             <h2>Информация о задаче</h2>
             <div style="display: flex; align-items: center;">
-                <button class="edit-task-panel-btn" onclick="editTask('${task.id}')">
-                    <i class="fas fa-edit"></i> Изменить
-                </button>
                 <button class="close-panel-btn" onclick="closeTaskPanel()">&times;</button>
             </div>
         </div>
@@ -921,29 +918,44 @@ function openTaskPanel(id, event) {
                 </div>
                 <div class="panel-item">
                     <label>Название:</label>
-                    <div class="panel-value-title">${task.title}</div>
+                    <input type="text" id="panelTitleInput" class="panel-input" value="${task.title}">
                 </div>
                 <div class="panel-item">
                     <label>Статус:</label>
-                    <span>${stages.find(s => s.id === task.status)?.name || task.status}</span>
+                    <select id="panelStatusInput" class="panel-input">
+                        ${stages.map(s => `<option value="${s.id}" ${s.id === task.status ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
                 </div>
                 <div class="panel-item">
                     <label>Приоритет:</label>
-                    <span class="priority-badge priority-${task.priority}">${priorityText}</span>
+                    <select id="panelPriorityInput" class="panel-input">
+                        <option value="1" ${task.priority == '1' ? 'selected' : ''}>Низкий</option>
+                        <option value="2" ${task.priority == '2' ? 'selected' : ''}>Средний</option>
+                        <option value="3" ${task.priority == '3' ? 'selected' : ''}>Высокий</option>
+                    </select>
                 </div>
                 <div class="panel-item">
                     <label>Ответственный:</label>
-                    <span>${task.assignee}</span>
+                    <div class="custom-select-container">
+                        <input type="text" id="panelAssigneeInput" class="panel-input" value="${task.assignee}" autocomplete="off">
+                        <div id="panel-assignee-dropdown" class="custom-dropdown"></div>
+                    </div>
                 </div>
                 <div class="panel-item">
-                    <label>Сроки:</label>
-                    <span>${formatDate(task.startDate)} — ${formatDate(task.endDate)}</span>
+                    <label>Дата начала:</label>
+                    <input type="date" id="panelStartDateInput" class="panel-input" value="${task.startDate}">
+                </div>
+                <div class="panel-item">
+                    <label>Дата окончания:</label>
+                    <input type="date" id="panelEndDateInput" class="panel-input" value="${task.endDate}">
                 </div>
                 <div class="panel-item">
                     <label>Комментарий:</label>
                     <textarea id="panelCommentInput" class="panel-comment-edit" placeholder="Добавьте комментарий...">${task.comment || ''}</textarea>
-                    <button class="save-comment-btn" onclick="updateTaskComment('${task.id}')">Сохранить комментарий</button>
                 </div>
+                <button class="save-task-panel-btn" onclick="saveTaskFromPanel('${task.id}')">
+                    <i class="fas fa-save"></i> Сохранить изменения
+                </button>
             </div>
 
             <div class="panel-section">
@@ -989,6 +1001,9 @@ function openTaskPanel(id, event) {
 
     panel.classList.add('active');
     
+    // Setup custom dropdown for assignee in panel
+    setupCustomDropdown('panelAssigneeInput', 'panel-assignee-dropdown');
+
     // Scroll chat to bottom
     const chatMessages = panel.querySelector('#chatMessages');
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1065,18 +1080,38 @@ async function sendMessage(taskId) {
     }
 }
 
-async function updateTaskComment(taskId) {
-    const commentInput = document.getElementById('panelCommentInput');
-    const newComment = commentInput.value.trim();
+async function saveTaskFromPanel(taskId) {
     const task = tasks.find(t => t.id === taskId);
-    
-    if (task) {
-        task.comment = newComment;
-        await saveTaskOnServer(task);
-        // Refresh the panel to show updated info if needed, 
-        // though textarea already has the value.
-        // But saveTaskOnServer will trigger a re-render of the board.
+    if (!task) return;
+
+    const title = document.getElementById('panelTitleInput').value.trim();
+    const status = document.getElementById('panelStatusInput').value;
+    const priority = document.getElementById('panelPriorityInput').value;
+    const assignee = document.getElementById('panelAssigneeInput').value.trim();
+    const startDate = document.getElementById('panelStartDateInput').value;
+    const endDate = document.getElementById('panelEndDateInput').value;
+    const comment = document.getElementById('panelCommentInput').value.trim();
+
+    if (!title || !assignee || !startDate || !endDate) {
+        alert('Пожалуйста, заполните все обязательные поля');
+        return;
     }
+
+    const updatedTask = {
+        ...task,
+        title,
+        status,
+        priority,
+        assignee,
+        startDate,
+        endDate,
+        comment
+    };
+
+    await saveTaskOnServer(updatedTask);
+    // Panel will be refreshed by renderTasks -> fetchTasks if we want, 
+    // but here we just need to make sure the board is updated.
+    // saveTaskOnServer already calls fetchTasks() and renderTasks().
 }
 
 function closeTaskPanel() {
