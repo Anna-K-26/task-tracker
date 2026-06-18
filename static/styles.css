@@ -348,7 +348,7 @@ body {
     align-items: center;
 }
 
-.open-btn, .delete-btn {
+.open-btn, .delete-btn, .complete-btn {
     border: none;
     padding: 5px 15px;
     border-radius: 20px;
@@ -362,6 +362,14 @@ body {
 
 .open-btn {
     background-color: var(--primary-color);
+}
+
+.complete-btn {
+    background-color: #4caf50;
+}
+
+.complete-btn:hover {
+    background-color: #43a047;
 }
 
 .delete-btn {
