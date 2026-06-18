@@ -767,6 +767,7 @@ function createTaskCard(task) {
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
         <div class="task-footer">
             <button class="open-btn" onclick="openTaskPanel('${task.id}', event)"><i class="fas fa-external-link-alt"></i> Открыть</button>
+            ${task.status !== 'done' ? `<button class="complete-btn" onclick="completeTask('${task.id}', event)"><i class="fas fa-check"></i> Завершить</button>` : ''}
             <button class="delete-btn" onclick="deleteTask('${task.id}', event)"><i class="fas fa-trash"></i> Удалить</button>
         </div>
     `;
@@ -779,6 +780,25 @@ function createTaskCard(task) {
     });
 
     return card;
+}
+
+function completeTask(id, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        // Check if endDate is in the future
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDate = new Date(task.endDate);
+        if (endDate > today) {
+            if (!confirm('Дата окончания этой задачи еще не наступила. Вы уверены, что хотите завершить ее?')) {
+                return;
+            }
+        }
+        
+        task.status = 'done';
+        saveTaskOnServer(task);
+    }
 }
 
 function formatDate(dateStr) {
