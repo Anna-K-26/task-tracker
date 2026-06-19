@@ -615,17 +615,50 @@ body {
 .panel-time-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 15px;
     background-color: #f0f4f3;
     padding: 10px 15px;
     border-radius: 8px;
 }
 
-.panel-value-time {
-    font-size: 20px;
-    font-weight: bold;
+.time-edit-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.panel-time-input-field {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
     font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 18px;
     color: var(--primary-color);
+    width: 120px;
+}
+
+.apply-time-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.apply-time-btn:hover {
+    transform: scale(1.2);
+}
+
+.time-hint {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+    font-size: 11px;
 }
 
 .panel-section {
