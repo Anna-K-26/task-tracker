@@ -612,6 +612,22 @@ body {
     transform: translateY(-1px);
 }
 
+.panel-time-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: #f0f4f3;
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+
+.panel-value-time {
+    font-size: 20px;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--primary-color);
+}
+
 .panel-section {
     margin-bottom: 30px;
     padding-bottom: 20px;
@@ -1050,6 +1066,50 @@ body {
 
 .custom-dropdown.active {
     display: block;
+}
+
+/* Time Tracking Styling */
+.task-time-tracking {
+    margin-top: 12px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+}
+
+.time-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    color: #555;
+}
+
+.timer-btn {
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.timer-btn.running {
+    background-color: #ff9800;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
 }
 
 /* Archive Modal Styling */
