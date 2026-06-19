@@ -432,6 +432,9 @@ function renderGanttChart() {
         ? tasks 
         : tasks.filter(t => t.assignee === assigneeFilter);
 
+    // Filter out archived tasks
+    filteredTasks = filteredTasks.filter(t => !t.archived);
+
     if (showOnlyMyTasks && currentUser) {
         filteredTasks = filteredTasks.filter(t => 
             t.assignee === currentUser.username || 
@@ -669,7 +672,7 @@ function renderTasks() {
     const groupedTasks = {};
     stages.forEach(s => groupedTasks[s.id] = []);
     
-    let filteredTasks = tasks;
+    let filteredTasks = tasks.filter(t => !t.archived);
     if (showOnlyMyTasks && currentUser) {
         filteredTasks = tasks.filter(t => 
             t.assignee === currentUser.username || 
@@ -768,6 +771,7 @@ function createTaskCard(task) {
         <div class="task-footer">
             <button class="open-btn" onclick="openTaskPanel('${task.id}', event)"><i class="fas fa-external-link-alt"></i> Открыть</button>
             ${task.status !== 'done' ? `<button class="complete-btn" onclick="completeTask('${task.id}', event)"><i class="fas fa-check"></i> Завершить</button>` : ''}
+            <button class="archive-btn" onclick="archiveTask('${task.id}', event)"><i class="fas fa-archive"></i> В архив</button>
             <button class="delete-btn" onclick="deleteTask('${task.id}', event)"><i class="fas fa-trash"></i> Удалить</button>
         </div>
     `;
@@ -796,9 +800,71 @@ function completeTask(id, event) {
             }
         }
         
-        task.status = 'done';
+        // Find the stage named "Готово"
+        const doneStage = stages.find(s => s.name.toLowerCase() === 'готово');
+        if (doneStage) {
+            task.status = doneStage.id;
+        } else {
+            task.status = 'done'; // Fallback
+        }
+        
         saveTaskOnServer(task);
     }
+}
+
+function archiveTask(id, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.archived = true;
+        saveTaskOnServer(task);
+    }
+}
+
+function unarchiveTask(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.archived = false;
+        saveTaskOnServer(task);
+        // Refresh archive modal if open
+        openArchiveModal();
+    }
+}
+
+function openArchiveModal() {
+    const modal = document.getElementById('archiveModal');
+    const list = document.getElementById('archivedTasksList');
+    if (!modal || !list) return;
+
+    const archivedTasks = tasks.filter(t => t.archived);
+    list.innerHTML = '';
+
+    if (archivedTasks.length === 0) {
+        list.innerHTML = '<p class="empty-archive">Архив пуст</p>';
+    } else {
+        archivedTasks.forEach(task => {
+            const item = document.createElement('div');
+            item.className = 'archived-task-item';
+            item.innerHTML = `
+                <div class="archived-task-info">
+                    <strong>#${task.id} ${task.title}</strong>
+                    <span>${task.assignee} | ${formatDate(task.startDate)} - ${formatDate(task.endDate)}</span>
+                </div>
+                <div class="archived-task-actions">
+                    <button onclick="unarchiveTask('${task.id}')" title="Восстановить"><i class="fas fa-undo"></i></button>
+                    <button onclick="deleteTask('${task.id}')" class="delete-btn-small" title="Удалить навсегда"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    modal.style.display = 'block';
+}
+
+function closeArchiveModal() {
+    const modal = document.getElementById('archiveModal');
+    if (modal) modal.style.display = 'none';
 }
 
 function formatDate(dateStr) {
@@ -1222,6 +1288,10 @@ function setupEventListeners() {
     window.addEventListener('click', (event) => {
         if (event.target == taskModal) {
             taskModal.style.display = 'none';
+        }
+        const archiveModal = document.getElementById('archiveModal');
+        if (event.target == archiveModal) {
+            archiveModal.style.display = 'none';
         }
     });
 
