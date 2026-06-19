@@ -59,6 +59,8 @@ class Task(BaseModel):
     comment: Optional[str] = ""
     status: str
     archived: Optional[bool] = False
+    totalTime: Optional[int] = 0  # в секундах
+    timerStart: Optional[float] = None  # timestamp начала замера
     messages: Optional[List[Message]] = []
     files: Optional[List[TaskFile]] = []
 
