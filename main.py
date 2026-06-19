@@ -174,7 +174,7 @@ async def register(user: User, response: Response):
     if any(u["username"] == user.username for u in users):
         raise HTTPException(status_code=400, detail="Пользователь с таким логином уже существует")
     
-    users.append(user.dict())
+    users.append(user.model_dump())
     save_users(users)
     
     response.set_cookie(key="session_id", value=user.username, httponly=True)
@@ -202,7 +202,7 @@ async def get_tasks():
 async def create_task(task: Task):
     print(f"Creating task: {task.id}")
     tasks_data = load_tasks()
-    tasks_data.append(task.dict())
+    tasks_data.append(task.model_dump())
     save_tasks(tasks_data)
     return task
 
@@ -213,7 +213,7 @@ async def update_task(task_id: str, updated_task: Task):
     found = False
     for i, t in enumerate(tasks_data):
         if str(t.get("id")) == str(task_id):
-            tasks_data[i] = updated_task.dict()
+            tasks_data[i] = updated_task.model_dump()
             found = True
             break
     
@@ -242,7 +242,7 @@ async def get_stages():
 @app.post("/stages")
 async def create_stage(stage: Stage):
     stages = load_stages()
-    stages.append(stage.dict())
+    stages.append(stage.model_dump())
     save_stages(stages)
     return stage
 
@@ -252,7 +252,7 @@ async def update_stage(stage_id: str, updated_stage: Stage):
     found = False
     for i, s in enumerate(stages):
         if s["id"] == stage_id:
-            stages[i] = updated_stage.dict()
+            stages[i] = updated_stage.model_dump()
             found = True
             break
     if found:
@@ -339,7 +339,7 @@ async def add_message(task_id: str, message: Message):
     
     if "messages" not in tasks[task_index]:
         tasks[task_index]["messages"] = []
-    tasks[task_index]["messages"].append(message.dict())
+    tasks[task_index]["messages"].append(message.model_dump())
     save_tasks(tasks)
     
     return message
