@@ -58,6 +58,7 @@ class Task(BaseModel):
     priority: str
     comment: Optional[str] = ""
     status: str
+    archived: Optional[bool] = False
     messages: Optional[List[Message]] = []
     files: Optional[List[TaskFile]] = []
 
