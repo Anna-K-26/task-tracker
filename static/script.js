@@ -117,7 +117,7 @@ async function deleteTaskFromServer(id) {
             throw new Error('Failed to delete task');
         }
         
-        tasks = tasks.filter(t => t.id !== id);
+        tasks = tasks.filter(t => String(t.id) !== String(id));
         renderTasks();
         updateAssigneeFilter();
     } catch (error) {
@@ -788,7 +788,7 @@ function createTaskCard(task) {
 
 function completeTask(id, event) {
     if (event) event.stopPropagation();
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
         // Check if endDate is in the future
         const today = new Date();
@@ -814,20 +814,26 @@ function completeTask(id, event) {
 
 function archiveTask(id, event) {
     if (event) event.stopPropagation();
-    const task = tasks.find(t => t.id === id);
+    console.log('Archiving task:', id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
         task.archived = true;
         saveTaskOnServer(task);
+    } else {
+        console.error('Task not found for archiving:', id);
     }
 }
 
 function unarchiveTask(id) {
-    const task = tasks.find(t => t.id === id);
+    console.log('Unarchiving task:', id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
         task.archived = false;
         saveTaskOnServer(task);
         // Refresh archive modal if open
         openArchiveModal();
+    } else {
+        console.error('Task not found for unarchiving:', id);
     }
 }
 
@@ -948,7 +954,7 @@ function openModal(status) {
 }
 
 function editTask(id) {
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
         updateStatusOptions();
         document.getElementById('taskId').value = task.id;
@@ -975,7 +981,7 @@ function deleteTask(id, event) {
 
 function openTaskPanel(id, event) {
     if (event) event.stopPropagation();
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
     let panel = document.getElementById('taskSidePanel');
@@ -1167,7 +1173,7 @@ async function sendMessage(taskId) {
 }
 
 async function saveTaskFromPanel(taskId) {
-    const task = tasks.find(t => t.id === taskId);
+    const task = tasks.find(t => String(t.id) === String(taskId));
     if (!task) return;
 
     const title = document.getElementById('panelTitleInput').value.trim();
@@ -1311,7 +1317,7 @@ function setupEventListeners() {
 
         if (id) {
             // Edit existing task
-            const index = tasks.findIndex(t => t.id === id);
+            const index = tasks.findIndex(t => String(t.id) === String(id));
             if (index !== -1) {
                 const updatedTask = { ...tasks[index], ...taskData };
                 saveTaskOnServer(updatedTask);
