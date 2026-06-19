@@ -625,6 +625,9 @@ function stopDragResize() {
 function renderTasks() {
     if (!kanbanContainer) return;
     
+    console.log('Rendering tasks, total:', tasks.length);
+    console.log('Archived tasks:', tasks.filter(t => t.archived).length);
+    
     // Clear kanban container
     kanbanContainer.innerHTML = '';
     columns = {};
@@ -674,7 +677,7 @@ function renderTasks() {
     
     let filteredTasks = tasks.filter(t => !t.archived);
     if (showOnlyMyTasks && currentUser) {
-        filteredTasks = tasks.filter(t => 
+        filteredTasks = filteredTasks.filter(t => 
             t.assignee === currentUser.username || 
             t.assignee === currentUser.displayName
         );
@@ -814,13 +817,14 @@ function completeTask(id, event) {
 
 function archiveTask(id, event) {
     if (event) event.stopPropagation();
-    console.log('Archiving task:', id);
+    console.log('Archiving task with ID:', id);
     const task = tasks.find(t => String(t.id) === String(id));
     if (task) {
+        console.log('Found task to archive:', task.title);
         task.archived = true;
         saveTaskOnServer(task);
     } else {
-        console.error('Task not found for archiving:', id);
+        console.error('Task not found for archiving. Available IDs:', tasks.map(t => t.id));
     }
 }
 
