@@ -348,7 +348,7 @@ body {
     align-items: center;
 }
 
-.open-btn, .delete-btn, .complete-btn {
+.open-btn, .delete-btn, .complete-btn, .archive-btn {
     border: none;
     padding: 5px 15px;
     border-radius: 20px;
@@ -370,6 +370,14 @@ body {
 
 .complete-btn:hover {
     background-color: #43a047;
+}
+
+.archive-btn {
+    background-color: #78909c;
+}
+
+.archive-btn:hover {
+    background-color: #607d8b;
 }
 
 .delete-btn {
@@ -1040,6 +1048,77 @@ body {
 
 .custom-dropdown.active {
     display: block;
+}
+
+/* Archive Modal Styling */
+.archive-modal-content {
+    width: 600px;
+}
+
+.archived-tasks-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.archived-task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.archived-task-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.archived-task-info strong {
+    font-size: 14px;
+    color: #333;
+}
+
+.archived-task-info span {
+    font-size: 12px;
+    color: #777;
+}
+
+.archived-task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.archived-task-actions button {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.archived-task-actions button:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.archived-task-actions .delete-btn-small:hover {
+    background-color: #ff5252;
+    border-color: #ff5252;
+}
+
+.empty-archive {
+    text-align: center;
+    color: #999;
+    padding: 40px 0;
+    font-style: italic;
 }
 
 /* Tooltip styling */
