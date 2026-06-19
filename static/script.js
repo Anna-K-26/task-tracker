@@ -169,6 +169,9 @@ async function deleteStageFromServer(id) {
 // Sorting state
 let sorts = {};
 
+// Active task in panel for timer updates
+let activeTaskIdForPanel = null;
+
 // Gantt state
 let currentView = 'kanban';
 let currentScale = 'week'; // 'day', 'week', 'month'
@@ -771,6 +774,12 @@ function createTaskCard(task) {
             </div>
         </div>
         ${task.comment ? `<div class="task-comment">${task.comment}</div>` : ''}
+        <div class="task-time-tracking">
+            <span class="time-display" id="time-display-${task.id}">${formatTime(task.totalTime || 0)}</span>
+            <button class="timer-btn ${task.timerStart ? 'running' : ''}" onclick="toggleTimer('${task.id}', event)">
+                <i class="fas ${task.timerStart ? 'fa-pause' : 'fa-play'}"></i>
+            </button>
+        </div>
         <div class="task-footer">
             <button class="open-btn" onclick="openTaskPanel('${task.id}', event)"><i class="fas fa-external-link-alt"></i> Открыть</button>
             ${task.status !== 'done' ? `<button class="complete-btn" onclick="completeTask('${task.id}', event)"><i class="fas fa-check"></i> Завершить</button>` : ''}
@@ -876,6 +885,53 @@ function closeArchiveModal() {
     const modal = document.getElementById('archiveModal');
     if (modal) modal.style.display = 'none';
 }
+
+// Time tracking functions
+function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+async function toggleTimer(id, event) {
+    if (event) event.stopPropagation();
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (!task) return;
+
+    const now = Date.now() / 1000;
+    if (task.timerStart) {
+        // Stop timer
+        const elapsed = Math.floor(now - task.timerStart);
+        task.totalTime = (task.totalTime || 0) + elapsed;
+        task.timerStart = null;
+    } else {
+        // Start timer
+        task.timerStart = now;
+    }
+
+    await saveTaskOnServer(task);
+}
+
+// Update running timers every second
+setInterval(() => {
+    const now = Date.now() / 1000;
+    tasks.forEach(task => {
+        if (task.timerStart) {
+            const elapsed = Math.floor(now - task.timerStart);
+            const total = (task.totalTime || 0) + elapsed;
+            const display = document.getElementById(`time-display-${task.id}`);
+            if (display) {
+                display.textContent = formatTime(total);
+            }
+            // Also update in side panel if open
+            const panelDisplay = document.getElementById('panelTimeDisplay');
+            if (panelDisplay && String(activeTaskIdForPanel) === String(task.id)) {
+                panelDisplay.textContent = formatTime(total);
+            }
+        }
+    });
+}, 1000);
 
 function formatDate(dateStr) {
     if (!dateStr) return '';
@@ -988,6 +1044,8 @@ function openTaskPanel(id, event) {
     const task = tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
+    activeTaskIdForPanel = id;
+
     let panel = document.getElementById('taskSidePanel');
     if (!panel) {
         panel = document.createElement('div');
@@ -1044,6 +1102,15 @@ function openTaskPanel(id, event) {
                 <div class="panel-item">
                     <label>Дата окончания:</label>
                     <input type="date" id="panelEndDateInput" class="panel-input" value="${task.endDate}">
+                </div>
+                <div class="panel-item">
+                    <label>Затраченное время:</label>
+                    <div class="panel-time-container">
+                        <span id="panelTimeDisplay" class="panel-value-time">${formatTime(task.totalTime || 0)}</span>
+                        <button class="timer-btn ${task.timerStart ? 'running' : ''}" onclick="toggleTimer('${task.id}', event); setTimeout(() => openTaskPanel('${task.id}'), 100)">
+                            <i class="fas ${task.timerStart ? 'fa-pause' : 'fa-play'}"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="panel-item">
                     <label>Комментарий:</label>
@@ -1211,6 +1278,7 @@ async function saveTaskFromPanel(taskId) {
 }
 
 function closeTaskPanel() {
+    activeTaskIdForPanel = null;
     const panel = document.getElementById('taskSidePanel');
     if (panel) panel.classList.remove('active');
 }
