@@ -192,7 +192,7 @@ async def get_me(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return {"username": user["username"], "displayName": user.get("displayName", user["username"])}
 
-@app.get("/tasks")
+@app.get("/tasks", response_model=List[Task])
 async def get_tasks():
     tasks_data = load_tasks()
     print(f"Returning {len(tasks_data)} tasks")
