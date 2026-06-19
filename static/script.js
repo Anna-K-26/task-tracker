@@ -905,18 +905,74 @@ async function toggleTimer(id, event) {
         const elapsed = Math.floor(now - task.timerStart);
         task.totalTime = (task.totalTime || 0) + elapsed;
         task.timerStart = null;
+        // Remove from local storage backup
+        localStorage.removeItem(`timer_${task.id}`);
     } else {
         // Start timer
         task.timerStart = now;
+        // Save to local storage backup
+        localStorage.setItem(`timer_${task.id}`, now.toString());
     }
 
     await saveTaskOnServer(task);
+}
+
+async function updateTimeManually(id) {
+    const task = tasks.find(t => String(t.id) === String(id));
+    if (!task) return;
+
+    const input = document.getElementById('panelTimeInput');
+    const timeStr = input.value.trim();
+    
+    // Parse HH:MM:SS
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) {
+        alert('Пожалуйста, используйте формат ЧЧ:ММ:СС');
+        return;
+    }
+
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const s = parseInt(parts[2], 10);
+
+    if (isNaN(h) || isClamped(h, 0, 999) === false || isNaN(m) || isClamped(m, 0, 59) === false || isNaN(s) || isClamped(s, 0, 59) === false) {
+        alert('Некорректные значения времени');
+        return;
+    }
+
+    function isClamped(val, min, max) {
+        return val >= min && val <= max;
+    }
+
+    const totalSeconds = h * 3600 + m * 60 + s;
+    
+    // If timer is running, we need to adjust timerStart or just stop it
+    if (task.timerStart) {
+        if (!confirm('Таймер запущен. Ручное изменение остановит таймер. Продолжить?')) {
+            return;
+        }
+        task.timerStart = null;
+        localStorage.removeItem(`timer_${task.id}`);
+    }
+
+    task.totalTime = totalSeconds;
+    await saveTaskOnServer(task);
+    alert('Время успешно обновлено');
+    openTaskPanel(id); // Refresh panel
 }
 
 // Update running timers every second
 setInterval(() => {
     const now = Date.now() / 1000;
     tasks.forEach(task => {
+        // Check local storage for backup if timerStart is missing (e.g. server was down)
+        if (!task.timerStart) {
+            const backupStart = localStorage.getItem(`timer_${task.id}`);
+            if (backupStart) {
+                task.timerStart = parseFloat(backupStart);
+            }
+        }
+
         if (task.timerStart) {
             const elapsed = Math.floor(now - task.timerStart);
             const total = (task.totalTime || 0) + elapsed;
@@ -925,9 +981,12 @@ setInterval(() => {
                 display.textContent = formatTime(total);
             }
             // Also update in side panel if open
-            const panelDisplay = document.getElementById('panelTimeDisplay');
-            if (panelDisplay && String(activeTaskIdForPanel) === String(task.id)) {
-                panelDisplay.textContent = formatTime(total);
+            const panelInput = document.getElementById('panelTimeInput');
+            if (panelInput && String(activeTaskIdForPanel) === String(task.id)) {
+                // Only update if user is not typing
+                if (document.activeElement !== panelInput) {
+                    panelInput.value = formatTime(total);
+                }
             }
         }
     });
@@ -1106,11 +1165,16 @@ function openTaskPanel(id, event) {
                 <div class="panel-item">
                     <label>Затраченное время:</label>
                     <div class="panel-time-container">
-                        <span id="panelTimeDisplay" class="panel-value-time">${formatTime(task.totalTime || 0)}</span>
+                        <div class="time-edit-group">
+                            <input type="text" id="panelTimeInput" class="panel-time-input-field" value="${formatTime(task.totalTime || 0)}" placeholder="ЧЧ:ММ:СС">
+                            <button class="apply-time-btn" onclick="updateTimeManually('${task.id}')" title="Применить вручную"><i class="fas fa-check-circle"></i></button>
+                        </div>
+                        <span id="panelTimeDisplay" class="panel-value-time" style="display: none;">${formatTime(task.totalTime || 0)}</span>
                         <button class="timer-btn ${task.timerStart ? 'running' : ''}" onclick="toggleTimer('${task.id}', event); setTimeout(() => openTaskPanel('${task.id}'), 100)">
                             <i class="fas ${task.timerStart ? 'fa-pause' : 'fa-play'}"></i>
                         </button>
                     </div>
+                    <small class="time-hint">Формат: ЧЧ:ММ:СС (можно редактировать вручную)</small>
                 </div>
                 <div class="panel-item">
                     <label>Комментарий:</label>
