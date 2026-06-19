@@ -343,21 +343,23 @@ body {
 .task-footer {
     margin-top: 15px;
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
 }
 
 .open-btn, .delete-btn, .complete-btn, .archive-btn {
     border: none;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 5px;
     color: white;
+    white-space: nowrap;
 }
 
 .open-btn {
