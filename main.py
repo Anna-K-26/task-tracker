@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Response,
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 import os
 import json
@@ -26,37 +26,43 @@ if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
 class User(BaseModel):
-    username: str
-    displayName: str
-    password: str
+    model_config = ConfigDict(from_attributes=True)
+    username: str = Field(..., description="Уникальный логин пользователя")
+    displayName: str = Field(..., description="Отображаемое имя")
+    password: str = Field(..., description="Пароль")
 
 class LoginData(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     username: str
     password: str
 
 class Stage(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
 
 class Message(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     sender: str
     text: str
     timestamp: str
 
 class TaskFile(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
     name: str
     path: str
 
 class Task(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: str
-    title: str
-    assignee: str
+    title: str = Field(..., max_length=100, description="Заголовок задачи")
+    assignee: str = Field(..., description="Ответственный за задачу")
     startDate: str
     endDate: str
     priority: str
-    comment: Optional[str] = ""
+    comment: Optional[str] = Field("", max_length=500, description="Комментарий к задаче")
     status: str
     archived: Optional[bool] = False
     totalTime: Optional[int] = 0  # в секундах
